@@ -23,6 +23,11 @@ export interface IEvent {
   createdAt: string;
 }
 
+export interface IAuthResponse {
+  user: IUser;
+  token: string;
+}
+
 export interface ITicket {
   id: string;
   eventId: string;
