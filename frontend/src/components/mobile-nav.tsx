@@ -4,9 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Calendar, Ticket, User, Scan } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const navItems = [
     {
@@ -28,7 +30,7 @@ export function MobileNav() {
       icon: User,
       roles: ["CREATOR", "EVENTEE"],
     },
-  ].filter((item) => !User || item.roles.includes(User.role));
+  ].filter((item) => !user || item.roles.includes(user.role));
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-lg border-t border-border sm:hidden">
