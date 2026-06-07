@@ -4,7 +4,7 @@
   "description": "Eventful - event ticketing platform backend",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/index.js",
     "dev": "tsx index.ts",
     "test": "jest",
