@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["eventful"]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         String
+  createdAt    DateTime @default(now())
+  events       Event[]  @relation("CreatorEvents")
+  tickets      Ticket[] @relation("EventeeTickets")
+
+  @@schema("eventful")
+}
+
+model Event {
+  id              String   @id @default(uuid())
+  title           String
+  description     String
+  date            DateTime
+  creatorId       String
+  basePrice       Float
+  calculatedPrice Float
+  reminderType    String
+  pricingType     String
+  createdAt       DateTime @default(now())
+  creator         User     @relation("CreatorEvents", fields: [creatorId], references: [id])
+  tickets         Ticket[]
+
+  @@schema("eventful")
+}
+
+model Ticket {
+  id         String   @id @default(uuid())
+  eventId    String
+  eventeeId  String
+  qrCodeUrl  String?
+  reference  String?  @unique
+  isPaid     Boolean  @default(false)
+  isScanned  Boolean  @default(false)
+  amountPaid Float
+  createdAt  DateTime @default(now())
+  event      Event    @relation(fields: [eventId], references: [id])
+  eventee    User     @relation("EventeeTickets", fields: [eventeeId], references: [id])
+
+  @@schema("eventful")
+}
