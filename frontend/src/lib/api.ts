@@ -1,7 +1,7 @@
 import axios from "axios";
 import { queryClient } from "./query-client";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 // Standard API: uses Bearer JWT
 export const api = axios.create({

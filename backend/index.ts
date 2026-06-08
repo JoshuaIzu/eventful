@@ -40,6 +40,7 @@ import { scanAuthMiddleware } from './middleware/scan.auth.middleware';
 import { ScanController } from './events/scan.controller';
 import { createScanRoutes } from './events/scan.routes';
 import path from 'path';
+import next from 'next';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 
@@ -114,47 +115,46 @@ const notificationDispatcher = new BullMQNotificationDispatcher(notificationQueu
 eventSubject.attach('PAYMENT_SUCCESS', new TicketQrObserver(ticketRepo));
 eventSubject.attach('PAYMENT_SUCCESS', new NotificationObserver(eventRepo, notificationDispatcher));
 
-app.use('/api/auth',      createAuthRoutes(authController, strictAuthLimiter, authenticateToken));
-app.use('/api/events',    createEventRoutes(eventController, standardRouteLimiter, authenticateToken));
-app.use('/api/analytics', createAnalyticsRoutes(analyticController, standardRouteLimiter,authenticateToken));
-app.use('/api/checkout',   createCheckoutRoutes(checkoutController, webhookController, standardRouteLimiter, authenticateToken));
-app.use('/api/scan',       createScanRoutes(scanController, standardRouteLimiter, scanAuthMiddleware));
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+const dev = process.env.NODE_ENV !== 'production';
+const frontendDir = path.join(__dirname, dev ? '../frontend' : '../../frontend');
+const nextApp = next({ dev, dir: frontendDir });
+const handle = nextApp.getRequestHandler();
 
-// Serve Frontend (Next.js Standalone Build)
-const frontendPath = path.join(__dirname, '../frontend/.next/standalone/frontend');
-const publicPath = path.join(__dirname, '../frontend/public');
-const staticPath = path.join(__dirname, '../frontend/.next/static');
+nextApp.prepare().then(() => {
+  app.use('/api/auth',      createAuthRoutes(authController, strictAuthLimiter, authenticateToken));
+  app.use('/api/events',    createEventRoutes(eventController, standardRouteLimiter, authenticateToken));
+  app.use('/api/analytics', createAnalyticsRoutes(analyticController, standardRouteLimiter,authenticateToken));
+  app.use('/api/checkout',   createCheckoutRoutes(checkoutController, webhookController, standardRouteLimiter, authenticateToken));
+  app.use('/api/scan',       createScanRoutes(scanController, standardRouteLimiter, scanAuthMiddleware));
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-if (process.env.NODE_ENV === 'production') {
-  app.use('/_next/static', express.static(staticPath));
-  app.use(express.static(publicPath));
+  // Serve static files from the public folder
+  app.use(express.static(path.join(frontendDir, 'public')));
 
+  // Explicitly serve Next.js compiled assets (CSS/JS)
+  app.use('/_next', express.static(path.join(frontendDir, '.next')));
+
+  // Catch-all: Hand over all other requests to Next.js React renderer
   app.all('*', (req, res) => {
-    // In standalone mode, we normally start the Next.js server.
-    // However, if we want Express to serve the Next.js app, we can serve the static index or proxy.
-    // For a smoother experience, we'll serve the static files and redirect to the Next.js server if needed,
-    // but here we'll assume we want the built static files to be served by Express if possible,
-    // or just inform the user they can also run them as separate processes.
-    // Since Next.js 15 standalone is a bit complex to 'require', we'll use a simpler static serving if it was a static export,
-    // but for standalone, it's better to let the Procfile handle it or use a proxy.
-    // Given the request "starts the frontend together", the most robust way is to serve the public/index.html if it exists.
-    res.sendFile(path.join(publicPath, 'index.html'), (err) => {
-       if (err) {
-         res.status(404).send("Frontend build not found or not accessible via Express.");
-       }
-    });
+    return handle(req, res);
   });
-}
 
-const shutdown = async (signal: string) => {
+  const shutdown = async (signal: string) => {
     console.log(`[server] received ${signal}, shutting down…`);
     await worker.close();
     await notificationQueue.close();
     await prisma.$disconnect();
     process.exit(0);
-};
-process.on('SIGINT',  () => shutdown('SIGINT'));
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  };
+
+  process.on('SIGINT',  () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server & Next.js running on port ${PORT}`);
+  });
+}).catch((err) => {
+  console.error('Error starting Next.js Custom Server:', err);
+  process.exit(1);
+});
