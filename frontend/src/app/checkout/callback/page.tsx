@@ -1,22 +1,35 @@
 "use client"
 
 import * as React from "react"
+import { Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { useVerifyPayment } from "@/hooks/use-checkout"
 import { LoadingCarousel } from "@/components/ui/loading-carousel"
 import { Button } from "@/components/ui/button"
 import { BorderBeamButton } from "@/components/ui/border-beam-button"
-import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle, XCircle, ArrowLeft, Ticket } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { CheckCircle, XCircle, Ticket } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 
 export default function PaymentCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <LoadingCarousel tips={["Loading..."]} />
+      </div>
+    }>
+      <PaymentCallbackContent />
+    </Suspense>
+  )
+}
+
+function PaymentCallbackContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const reference = searchParams.get("reference")
 
-  const { data, isLoading, isError, error } = useVerifyPayment(reference ?? "")
+  const { data, isLoading, isError } = useVerifyPayment(reference ?? "")
 
   if (!reference) {
     return (
