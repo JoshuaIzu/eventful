@@ -2,25 +2,19 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import * as React from "react"
 
 interface PaymentModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (email: string) => void
+  onConfirm: () => void
   amount: number
 }
 
 export function PaymentModal({ isOpen, onClose, onConfirm, amount }: PaymentModalProps) {
-  const [email, setEmail] = React.useState("")
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (email) {
-      onConfirm(email)
-    }
+    onConfirm()
   }
 
   return (
@@ -29,28 +23,16 @@ export function PaymentModal({ isOpen, onClose, onConfirm, amount }: PaymentModa
         <DialogHeader>
           <DialogTitle className="text-text-primary">Confirm Purchase</DialogTitle>
           <DialogDescription className="text-text-secondary">
-            Enter your email address to receive your ticket and proceed to payment.
+            You are about to purchase a ticket. Payment will be processed via Paystack.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-text-secondary">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-background border-border text-text-primary font-mono min-h-[44px]"
-              required
-            />
-          </div>
-          <div className="flex justify-between items-center pt-2">
+          <div className="flex justify-between items-center p-4 rounded-xl bg-background border border-border">
              <span className="text-text-muted text-sm uppercase font-mono">Total to pay</span>
-             <span className="text-xl font-bold text-accent font-mono">${(amount / 100).toFixed(2)}</span>
+             <span className="text-xl font-bold text-accent font-mono">${amount.toFixed(2)}</span>
           </div>
           <DialogFooter className="sm:justify-start">
-            <Button type="submit" className="w-full bg-accent hover:bg-accent-glow text-white min-h-[44px]">
+            <Button type="submit" className="w-full bg-accent hover:bg-accent-glow text-white min-h-11">
               Proceed to Paystack
             </Button>
           </DialogFooter>

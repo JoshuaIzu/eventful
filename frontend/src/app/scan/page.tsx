@@ -13,7 +13,7 @@ import { Scan, ShieldCheck, XCircle, KeyRound, Camera } from "lucide-react";
 function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
   const [password, setPassword] = React.useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!password) return;
     localStorage.setItem("eventful_scan_password", password);
@@ -22,11 +22,12 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6 sm:p-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md space-y-8"
-      >
+      <div className="w-full max-w-md">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full space-y-8 flex flex-col items-center"
+        >
         <div className="text-center space-y-3">
           <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto border border-accent/20">
             <KeyRound className="w-8 h-8 text-accent" />
@@ -42,7 +43,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-border bg-surface p-6 sm:p-8 space-y-4"
+          className="rounded-2xl border border-border bg-surface p-6 sm:p-8 space-y-4 w-full min-w-[300px]"
         >
           <div className="space-y-1.5">
             <Label className="text-text-secondary text-sm">Scan Password</Label>
@@ -65,6 +66,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
           </Button>
         </form>
       </motion.div>
+      </div>
     </div>
   );
 }
@@ -79,7 +81,7 @@ function ScannerView() {
     message: string;
   } | null>(null);
 
-  const handleScan = (e: React.FormEvent) => {
+  const handleScan = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!ticketId || !eventId) return;
     scan.mutate(

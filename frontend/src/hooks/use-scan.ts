@@ -6,9 +6,9 @@ export function useScanTicket() {
   return useMutation({
     mutationFn: ({ ticketId, eventId }: { ticketId: string; eventId: string }) =>
       scanApi.post("/scan", { ticketId, eventId }).then(r => r.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["checkout", "history"] })
-      queryClient.invalidateQueries({ queryKey: ["analytics"] })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["checkout", "history"] })
+      await queryClient.invalidateQueries({ queryKey: ["analytics"] })
     },
   })
 }

@@ -10,31 +10,27 @@ import { PriceTag } from "@/components/price-tag"
 import { ShieldCheck, ArrowLeft, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PaymentModal } from "@/components/payment-modal"
-import api from "@/lib/api"
+import { useCheckout } from "@/hooks/use-checkout"
 import { toast } from "sonner"
 
 export default function CheckoutPage() {
   const { eventId } = useParams()
   const router = useRouter()
   const { data: event, isLoading } = useEvent(eventId as string)
+  const checkout = useCheckout()
   const [isModalOpen, setModalOpen] = React.useState(false)
-  const [isProcessing, setProcessing] = React.useState(false)
 
-  const handlePayment = async (email: string) => {
-    setProcessing(true)
+  const handlePayment = async () => {
     try {
-      const { data } = await api.post("/checkout", { eventId })
-      if (data.authorizationUrl) {
-        window.location.href = data.authorizationUrl
+      const result = await checkout.mutateAsync({ eventId: eventId as string })
+      if (result.authorizationUrl) {
+        window.location.href = result.authorizationUrl
       } else {
         toast.error("Failed to initiate payment. Please try again.")
       }
     } catch (err) {
       toast.error("An error occurred during checkout.")
       console.error(err)
-    } finally {
-      setProcessing(false)
-      setModalOpen(false)
     }
   }
 
@@ -92,18 +88,14 @@ export default function CheckoutPage() {
             </div>
           </CardContent>
           <CardFooter className="p-6 bg-surface-elevated/50 flex flex-col gap-4">
-             {isProcessing ? (
-               <LoadingCarousel tips={["Connecting to Paystack...", "Please do not refresh the page"]} interval={2000} />
-             ) : (
-               <BorderBeamButton 
-                className="w-full" 
-                size="lg" 
-                variantColor="colorful"
-                onClick={() => setModalOpen(true)}
-               >
-                 Pay with Paystack
-               </BorderBeamButton>
-             )}
+             <BorderBeamButton
+              className="w-full"
+              size="lg"
+              variantColor="colorful"
+              onClick={() => setModalOpen(true)}
+             >
+               Pay with Paystack
+             </BorderBeamButton>
              <div className="flex items-center justify-center gap-2 text-xs text-text-muted">
                 <ShieldCheck className="w-4 h-4" />
                 Secured by Paystack
@@ -112,10 +104,10 @@ export default function CheckoutPage() {
         </Card>
       </div>
 
-      <PaymentModal 
-        isOpen={isModalOpen} 
-        onClose={() => setModalOpen(false)} 
-        onConfirm={handlePayment} 
+      <PaymentModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        onConfirm={handlePayment}
         amount={event.calculatedPrice}
       />
     </div>

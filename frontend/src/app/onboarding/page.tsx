@@ -1,12 +1,16 @@
 "use client"
 
-import { ShieldCheck, Check } from "lucide-react"
+import { ShieldCheck, Check, Eye, EyeOff } from "lucide-react"
 import * as React from "react"
 import { Onboarding } from "@/components/ui/onboarding"
-import { Sparkles, Ticket, Heart, Zap, Music, Terminal, Trophy, Palette, Briefcase } from "lucide-react"
+import { Sparkles, Ticket, Zap, Music } from "lucide-react"
 import { UserRole } from "@/types"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useAuth } from "@/hooks/use-auth"
 
 const ROLES = [
   { id: 'CREATOR' as UserRole, label: 'Event Creator', icon: Sparkles, description: 'I want to host and manage events' },
@@ -18,8 +22,14 @@ const EVENTEE_INTERESTS = ["Music", "Tech", "Arts", "Sports", "Business", "Somet
 
 export default function OnboardingPage() {
   const router = useRouter()
+  const { signup } = useAuth()
   const [role, setRole] = React.useState<UserRole | null>(null)
   const [goals, setGoals] = React.useState<string[]>([])
+  const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
+  const [showPassword, setShowPassword] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   const steps = [
     {
@@ -38,6 +48,72 @@ export default function OnboardingPage() {
                 <p className="text-[10px] text-text-muted">{item.desc}</p>
              </div>
            ))}
+        </div>
+      )
+    },
+    {
+      title: "Create Your Account",
+      description: "Enter your email and choose a password to get started.",
+      content: (
+        <div className="space-y-5 py-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-text-secondary text-sm">
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              disabled={isLoading}
+              className="min-h-11"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-text-secondary text-sm">
+              Password
+            </Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="At least 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                disabled={isLoading}
+                className="pr-10 min-h-11"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+                tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm text-error bg-error/10 border border-error/20 rounded-lg px-4 py-2.5"
+            >
+              {error}
+            </motion.p>
+          )}
         </div>
       )
     },
@@ -118,20 +194,42 @@ export default function OnboardingPage() {
     }
   ]
 
-  const handleComplete = (data: any) => {
-    // In a real app, we would save the role and goals to the backend here
-    console.log("Onboarding complete:", { role, goals })
-    router.push(role === 'CREATOR' ? '/creator' : '/events')
+  const handleComplete = async () => {
+    if (!role) {
+      setError("Please choose a role before completing.")
+      return
+    }
+    setError(null)
+    setIsLoading(true)
+    try {
+      await signup(email, password, role)
+    } catch (err: any) {
+      setIsLoading(false)
+      setError(
+        err?.response?.data?.message ??
+          err?.message ??
+          "Something went wrong. Please try again."
+      )
+    }
   }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6 sm:p-8">
       <div className="w-full max-w-2xl">
-        <Onboarding 
-          steps={steps} 
-          onComplete={handleComplete} 
-          onClose={() => router.push('/')} 
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full flex flex-col items-center"
+        >
+          <div className="w-full min-w-75">
+            <Onboarding
+              steps={steps}
+              onComplete={handleComplete}
+              onClose={() => router.push('/')}
+              error={error}
+            />
+          </div>
+        </motion.div>
       </div>
     </div>
   )

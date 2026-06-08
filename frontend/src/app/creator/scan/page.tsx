@@ -17,7 +17,7 @@ export default function QRScannerPage() {
   const [isScanning, setIsScanning] = React.useState(false)
   const [lastResult, setLastResult] = React.useState<{ success: boolean, message: string } | null>(null)
 
-  const handleScan = async (e: React.FormEvent) => {
+  const handleScan = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!ticketId || !eventId) {
       toast.error("Ticket ID and Event ID are required.")
