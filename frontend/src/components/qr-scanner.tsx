@@ -44,18 +44,20 @@ export function QRScanner({ eventId }: { eventId: string }) {
   }
 
   const startCamera = async () => {
-    const scanner = new Html5Qrcode("qr-reader")
-    scannerRef.current = scanner
-    await scanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      (decodedText) => {
-        setTicketId(decodedText)
-        stopCamera()
-      },
-      undefined
-    )
     setCameraActive(true)
+    setTimeout(async () => {
+      const scanner = new Html5Qrcode("qr-reader")
+      scannerRef.current = scanner
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          setTicketId(decodedText)
+          stopCamera()
+        },
+        undefined
+      )
+    }, 100)
   }
 
   const stopCamera = async () => {
@@ -69,7 +71,7 @@ export function QRScanner({ eventId }: { eventId: string }) {
 
   if (!saved) {
     return (
-      <div className="p-8 space-y-4 max-w-md mx-auto">
+      <div className="min-h-screen bg-background flex-col items-center justify-center p-6">
         <h2 className="text-xl font-bold">Enter Scan Password</h2>
         <p className="text-text-secondary text-sm">
           This password is provided by the event organizer. No login required.
@@ -88,12 +90,12 @@ export function QRScanner({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="p-8 space-y-4 max-w-md mx-auto">
+    <div className="min-h-screen bg-background flex-col items-center justify-center p-6 s">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">Scan Ticket</h2>
         <button
           onClick={() => {
-            localStorage.removeItem("eventful_scan_password")
+            localStorage.removeItem("scan_password")
             setSaved(false)
           }}
           className="text-xs text-text-muted underline"

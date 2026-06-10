@@ -31,8 +31,8 @@ scanApi.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     let scanPassword = localStorage.getItem("eventful_scan_password");
     // Fallback to env variable if present
-    if (!scanPassword && process.env.NEXT_PUBLIC_SCAN_PASSWORD) {
-      scanPassword = process.env.NEXT_PUBLIC_SCAN_PASSWORD;
+    if (!scanPassword && process.env.SCAN_PASSWORD) {
+      scanPassword = process.env.SCAN_PASSWORD;
     }
     if (scanPassword) config.headers["x-scan-id"] = scanPassword;
   }

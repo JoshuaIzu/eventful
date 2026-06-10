@@ -73,7 +73,7 @@ const BorderBeamButton = React.forwardRef<HTMLButtonElement, BorderBeamButtonPro
       >
         <motion.div
           className={cn(
-            "absolute inset-0 bg-linear-to-r opacity-50",
+            "absolute inset-0 bg-gradient-to-r opacity-50",
             beamColors[variantColor]
           )}
           animate={{
@@ -92,7 +92,7 @@ const BorderBeamButton = React.forwardRef<HTMLButtonElement, BorderBeamButtonPro
               zIndex: -1
           }}
         />
-        <span className="relative z-10 bg-background w-full py-2.5 flex items-center justify-center rounded-[calc(var(--radius-md)-1px)]">
+        <span className="relative z-10 bg-background w-full h-full flex items-center justify-center rounded-[calc(var(--radius-md)-1px)]">
             {children}
         </span>
       </Comp>
