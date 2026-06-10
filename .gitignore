@@ -7,4 +7,3 @@ backend/prisma/migrations/
 coverage/
 backend/.env
 .idea
-.junie

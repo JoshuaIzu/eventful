@@ -36,10 +36,10 @@ export default function ProfilePage() {
             Profile
           </h1>
 
-          <Card className="bg-surface border-border">
-            <CardHeader className="border-b border-border bg-surface-elevated">
+          <div className="bg-surface border-border">
+            <div className="border-b border-border bg-surface-elevated">
               <CardTitle>Account Info</CardTitle>
-            </CardHeader>
+            </div>
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-text-muted" />
@@ -56,7 +56,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </div>
 
           <BorderBeamButton
             variantColor="colorful"

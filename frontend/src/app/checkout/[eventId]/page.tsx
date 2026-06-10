@@ -4,7 +4,7 @@ import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useEvent } from "@/hooks/use-events"
 import { LoadingCarousel } from "@/components/ui/loading-carousel"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardFooter } from "@/components/ui/card"
 import { BorderBeamButton } from "@/components/ui/border-beam-button"
 import { PriceTag } from "@/components/price-tag"
 import { ShieldCheck, ArrowLeft, CreditCard } from "lucide-react"
@@ -45,19 +45,18 @@ export default function CheckoutPage() {
   if (!event) return null
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6 sm:p-8">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-md space-y-8">
         <Button variant="ghost" className="text-text-secondary hover:text-text-primary p-0" onClick={() => router.back()}>
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to event
         </Button>
-
-        <Card className="bg-surface border-border shadow-2xl">
-          <CardHeader className="border-b border-border bg-surface-elevated">
-            <CardTitle className="flex items-center gap-2">
+        <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-">
+          <div className="flex items-center gap-2 px-6 py-4 border-b border-border bg-surface-elevated">
+            <div className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-accent" />
                 Checkout Summary
-            </CardTitle>
-          </CardHeader>
+            </div>
+          </div>
           <CardContent className="p-6 space-y-6">
             <div className="space-y-4">
               <div className="flex justify-between items-start">
@@ -101,7 +100,7 @@ export default function CheckoutPage() {
                 Secured by Paystack
              </div>
           </CardFooter>
-        </Card>
+        </div>
       </div>
 
       <PaymentModal
