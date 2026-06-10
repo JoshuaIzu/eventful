@@ -1,17 +1,18 @@
 "use client"
-
+import React from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { LoadingCarousel } from "@/components/ui/loading-carousel"
 import { DesktopSidebar } from "@/components/desktop-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent,  CardTitle } from "@/components/ui/card"
 import { BorderBeamButton } from "@/components/ui/border-beam-button"
 import { User, Mail, Shield, LogOut } from "lucide-react"
 
 export default function ProfilePage() {
   const { user, isLoading, logout } = useAuth()
   const router = useRouter()
+  const [loggingOut, setLoggingOut] = React.useState(false)
 
   if (isLoading) {
     return (
@@ -22,7 +23,7 @@ export default function ProfilePage() {
   }
 
   if (!user) {
-    router.push("/login")
+    if (!loggingOut) router.push("/login")
     return null
   }
 
@@ -61,7 +62,7 @@ export default function ProfilePage() {
           <BorderBeamButton
             variantColor="colorful"
             className="w-full"
-            onClick={() => logout()}
+            onClick={async () => { setLoggingOut(true); await logout()}}
           >
             <LogOut className="w-4 h-4 mr-2" /> Sign Out
           </BorderBeamButton>
