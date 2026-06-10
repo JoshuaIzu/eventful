@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
+import { Html5Qrcode } from "html5-qrcode"
 import axios from "axios"
 import { useScanTicket } from "@/hooks/use-scan"
 import { Input } from "@/components/ui/input"
@@ -16,26 +17,55 @@ function getScanError(error: unknown): string {
 export function QRScanner({ eventId }: { eventId: string }) {
   const [password, setPassword] = useState("")
   const [ticketId, setTicketId] = useState("")
+  const [cameraActive, setCameraActive] = useState(false)
+  const scannerRef = useRef<Html5Qrcode | null>(null)
   const [saved, setSaved] = useState(() => {
+
     if (typeof window !== 'undefined') {
-      // Prioritize explicit localStorage, fallback to env
-      return !!(localStorage.getItem("eventful_scan_password") || process.env.NEXT_PUBLIC_SCAN_PASSWORD)
+
+      return !!(localStorage.getItem("scan_password") || process.env.SCAN_PASSWORD)
     }
     return false
   })
+
+
 
   // If we cleared it manually, saved will be false. 
   // If we reload, it will check env again.
   const scan = useScanTicket()
 
   const savePassword = () => {
-    localStorage.setItem("eventful_scan_password", password)
+    localStorage.setItem("scan_password", password)
     setSaved(true)
   }
 
   const handleScan = () => {
     scan.mutate({ ticketId, eventId })
   }
+
+  const startCamera = async () => {
+    const scanner = new Html5Qrcode("qr-reader")
+    scannerRef.current = scanner
+    await scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      (decodedText) => {
+        setTicketId(decodedText)
+        stopCamera()
+      },
+      undefined
+    )
+    setCameraActive(true)
+  }
+
+  const stopCamera = async () => {
+    await scannerRef.current?.stop()
+    setCameraActive(false)
+  }
+
+  useEffect(() => {
+    return () => { scannerRef.current?.stop() }
+  }, [])
 
   if (!saved) {
     return (
@@ -64,9 +94,6 @@ export function QRScanner({ eventId }: { eventId: string }) {
         <button
           onClick={() => {
             localStorage.removeItem("eventful_scan_password")
-            // Ensure even if env is set, user can "Change password" by clearing local and forcing prompt
-            // Actually if env is set, it will always be saved=true if we use the previous logic.
-            // Let's use a dedicated state for "forced logout" or just clear it.
             setSaved(false)
           }}
           className="text-xs text-text-muted underline"
@@ -80,6 +107,15 @@ export function QRScanner({ eventId }: { eventId: string }) {
         value={ticketId}
         onChange={(e) => setTicketId(e.target.value)}
       />
+
+      <Button
+        variant="outline"
+        onClick={cameraActive ? stopCamera : startCamera}
+        className="w-full"
+      >
+        {cameraActive ? "Stop Camera" : "Scan QR Code"}
+      </Button>
+      {cameraActive && <div id="qr-reader" className="rounded-lg w-full max-w-md" />}
 
       <Button
         onClick={handleScan}

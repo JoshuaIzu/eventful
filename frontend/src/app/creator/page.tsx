@@ -9,12 +9,14 @@ import { MobileNav } from "@/components/mobile-nav"
 import { LoadingCarousel } from "@/components/ui/loading-carousel"
 import { BorderBeamButton } from "@/components/ui/border-beam-button"
 import { Plus, Edit2, Copy, Trash2, LayoutDashboard } from "lucide-react"
+import { CreateEventModal } from "@/components/create-event-modal"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 export default function CreatorDashboardPage() {
   const { data: stats, isLoading: statsLoading } = useAnalyticsOverview()
+  const [isCreateOpen, setCreateOpen] = React.useState(false)
   const { data: events, isLoading: eventsLoading } = useMyEvents()
 
   const isLoading = statsLoading || eventsLoading
@@ -29,7 +31,7 @@ export default function CreatorDashboardPage() {
                 <LayoutDashboard className="w-6 h-6 text-accent" />
                 Creator Dashboard
             </h1>
-            <BorderBeamButton variantColor="sunset" size="sm" className="hidden sm:flex">
+            <BorderBeamButton variantColor="sunset" size="sm" className="hidden sm:flex" onClick={() => setCreateOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" /> Create Event
             </BorderBeamButton>
         </header>
@@ -75,7 +77,7 @@ export default function CreatorDashboardPage() {
                         <div className="flex flex-col items-center justify-center py-20 bg-surface/30 rounded-2xl border border-dashed border-border text-center space-y-4">
                              <Plus className="w-12 h-12 text-text-muted opacity-20" />
                              <p className="text-text-secondary">You haven't created any events yet.</p>
-                             <BorderBeamButton variantColor="sunset">Create My First Event</BorderBeamButton>
+                             <BorderBeamButton variantColor="sunset" onClick={() => setCreateOpen(true)}>Create My First Event</BorderBeamButton>
                         </div>
                     ) : (
                         events?.map((event) => (
@@ -121,11 +123,12 @@ export default function CreatorDashboardPage() {
             variantColor="sunset" 
             size="icon" 
             className="fixed bottom-20 right-4 h-14 w-14 rounded-full sm:hidden z-50 shadow-2xl"
+            onClick={() => setCreateOpen(true)}
         >
             <Plus className="w-6 h-6" />
         </BorderBeamButton>
       </main>
-
+      <CreateEventModal open={isCreateOpen} onOpenChange={setCreateOpen} />
       <MobileNav />
     </div>
   )

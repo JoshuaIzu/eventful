@@ -9,7 +9,7 @@ import { PriceTag } from "@/components/price-tag"
 import { RoleBadge } from "@/components/role-badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin, Share2, ArrowLeft, Clock, ShieldCheck } from "lucide-react"
+import { Calendar, Share2, ArrowLeft, Clock, ShieldCheck } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
@@ -50,7 +50,7 @@ export default function EventDetailPage() {
                 <ArrowLeft className="w-5 h-5" />
             </Button>
             <Image
-              src={event.imageUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1200&auto=format&fit=crop"}
+              src={event.imageUrl || "/images/eventful-ui-mockup.png"}
               alt={event.title}
               fill
               className="object-cover"

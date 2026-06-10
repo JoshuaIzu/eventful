@@ -12,7 +12,7 @@ interface PaymentModalProps {
 }
 
 export function PaymentModal({ isOpen, onClose, onConfirm, amount }: PaymentModalProps) {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.BaseSyntheticEvent) => {
     e.preventDefault()
     onConfirm()
   }

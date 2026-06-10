@@ -45,13 +45,13 @@ export default function CheckoutPage() {
   if (!event) return null
 
   return (
-    <div className="min-h-screen bg-background text-text-primary p-4 sm:p-8">
-      <div className="max-w-md mx-auto space-y-8">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6 sm:p-8">
+      <div className="w-full max-w-md space-y-8">
         <Button variant="ghost" className="text-text-secondary hover:text-text-primary p-0" onClick={() => router.back()}>
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to event
         </Button>
 
-        <Card className="bg-surface border-border overflow-hidden shadow-2xl">
+        <Card className="bg-surface border-border shadow-2xl">
           <CardHeader className="border-b border-border bg-surface-elevated">
             <CardTitle className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-accent" />
