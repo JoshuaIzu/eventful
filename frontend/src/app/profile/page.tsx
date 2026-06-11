@@ -1,5 +1,6 @@
 "use client"
-import React from "react"
+
+import React, { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { LoadingCarousel } from "@/components/ui/loading-carousel"
@@ -12,9 +13,15 @@ import { User, Mail, Shield, LogOut } from "lucide-react"
 export default function ProfilePage() {
   const { user, isLoading, logout } = useAuth()
   const router = useRouter()
-  const [loggingOut, setLoggingOut] = React.useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
 
-  if (isLoading) {
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted || isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <LoadingCarousel tips={["Loading profile..."]} />
@@ -23,9 +30,13 @@ export default function ProfilePage() {
   }
 
   if (!user) {
-    if (!loggingOut) router.push("/login")
+    if (!loggingOut) {
+      router.push("/login")
+    }
     return null
   }
+
+
 
   return (
     <div className="flex min-h-screen bg-background text-text-primary">
@@ -37,8 +48,8 @@ export default function ProfilePage() {
             Profile
           </h1>
 
-          <div className="bg-surface border-border">
-            <div className="border-b border-border bg-surface-elevated">
+          <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="border-b border-border bg-surface-elevated p-6">
               <CardTitle>Account Info</CardTitle>
             </div>
             <CardContent className="p-6 space-y-4">

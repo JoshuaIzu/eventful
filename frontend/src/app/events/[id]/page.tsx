@@ -12,11 +12,27 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, Share2, ArrowLeft, Clock, ShieldCheck } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 export default function EventDetailPage() {
   const { id } = useParams()
   const router = useRouter()
   const { data: event, isLoading } = useEvent(id as string)
+
+  const handleShare = async () => {
+    if  (!event) return
+    const url = `${window.location.origin}/events/${event.id}`
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: event.title, url })
+      } catch {
+        // User cancelled share sheet
+      }
+    } else {
+      await navigator.clipboard.writeText(url)
+      toast.success("Link copied to clipboard")
+    }
+  }
 
   if (isLoading) {
     return (
@@ -116,7 +132,7 @@ export default function EventDetailPage() {
                     />
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="icon" className="border-border lg:h-12 lg:w-12">
+                    <Button variant="outline" size="icon" className="border-border lg:h-12 lg:w-12" onClick={handleShare}>
                         <Share2 className="w-5 h-5" />
                     </Button>
                     <BorderBeamButton 

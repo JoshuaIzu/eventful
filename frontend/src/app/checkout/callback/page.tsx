@@ -34,7 +34,12 @@ function PaymentCallbackContent() {
   if (!reference) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <Card className="bg-surface border-border max-w-md w-full text-center p-8 space-y-6">
+        <motion.div
+          className="max-w-md w-full"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          >
+        <Card className="bg-surface border-border w-full text-center p-8 space-y-6 overflow-hidden">
           <XCircle className="w-16 h-16 text-error mx-auto" />
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-text-primary">Invalid Payment</h1>
@@ -44,6 +49,7 @@ function PaymentCallbackContent() {
             Browse Events
           </Button>
         </Card>
+        </motion.div>
       </div>
     )
   }
@@ -66,18 +72,19 @@ function PaymentCallbackContent() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <motion.div
+          className="max-w-md w-full"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="bg-surface border-border max-w-md w-full text-center p-8 space-y-6">
+          <Card className="bg-surface border-border  w-full text-center p-8 space-y-6 overflow-hidden">
             <XCircle className="w-16 h-16 text-error mx-auto" />
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-text-primary">Verification Failed</h1>
               <p className="text-text-secondary">
-                We couldn&apos;t verify your payment. If you were charged, it will be
+                We couldn't verify your payment. If you were charged, it will be
                 reflected shortly.
               </p>
-              <p className="text-xs text-text-muted font-mono">{reference}</p>
+              <p className="text-xs text-text-muted font-mono break-all">{reference}</p>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => router.push("/tickets")} className="flex-1">
@@ -99,11 +106,12 @@ function PaymentCallbackContent() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <motion.div
+          className="max-w-md w-full"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <Card className="bg-surface border-border max-w-md w-full text-center p-8 space-y-6">
+          <Card className="bg-surface border-border  w-full text-center p-8 space-y-6 overflow-hidden">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -119,8 +127,8 @@ function PaymentCallbackContent() {
             </div>
             <div className="p-4 rounded-xl bg-success/5 border border-success/20 space-y-2">
               <div className="flex items-center justify-center gap-2 text-sm text-text-secondary">
-                <Ticket className="w-4 h-4 text-accent" />
-                <span className="font-mono text-xs">{reference}</span>
+                <Ticket className="w-4 h-4 text-accent shrink-0" />
+                <span className="font-mono text-xs break-all">{reference}</span>
               </div>
               <p className="text-sm text-text-secondary">
                 Amount paid:{" "}
@@ -152,17 +160,24 @@ function PaymentCallbackContent() {
   // Fallback
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <Card className="bg-surface border-border max-w-md w-full text-center p-8 space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-text-primary">Payment Status Unknown</h1>
-          <p className="text-text-secondary">
-            Your payment is still being processed. Check your tickets page for updates.
-          </p>
-        </div>
-        <Button onClick={() => router.push("/tickets")} className="w-full">
-          Go to My Tickets
-        </Button>
-      </Card>
+      <motion.div
+        className="max-w-md w-full"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+        <Card className="bg-surface border-border w-full text-center p-8 space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-text-primary">Payment Status Unknown</h1>
+            <p className="text-text-secondary">
+              Your payment is still being processed. Check your tickets page for updates.
+            </p>
+          </div>
+          <Button onClick={() => router.push("/tickets")} className="w-full">
+            Go to My Tickets
+          </Button>
+        </Card>
+      </motion.div>
     </div>
   )
 }
