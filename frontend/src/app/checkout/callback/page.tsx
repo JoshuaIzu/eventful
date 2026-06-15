@@ -15,7 +15,7 @@ import { motion } from "framer-motion"
 export default function PaymentCallbackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
         <LoadingCarousel tips={["Loading..."]} />
       </div>
     }>
@@ -33,13 +33,13 @@ function PaymentCallbackContent() {
 
   if (!reference) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
         <motion.div
-          className="max-w-md w-full"
+          className="w-full max-w-md mx-auto"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           >
-        <Card className="bg-surface border-border w-full text-center p-8 space-y-6 overflow-hidden">
+        <Card className="bg-surface border-border w-full text-center p-8 space-y-6">
           <XCircle className="w-16 h-16 text-error mx-auto" />
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-text-primary">Invalid Payment</h1>
@@ -56,7 +56,7 @@ function PaymentCallbackContent() {
 
   if (isLoading || data?.status === "PENDING") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
         <LoadingCarousel
           tips={[
             "Verifying your payment...",
@@ -70,13 +70,13 @@ function PaymentCallbackContent() {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
         <motion.div
-          className="max-w-md w-full"
+          className="w-full max-w-md mx-auto"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="bg-surface border-border  w-full text-center p-8 space-y-6 overflow-hidden">
+          <Card className="bg-surface border-border w-full text-center p-8 space-y-6">
             <XCircle className="w-16 h-16 text-error mx-auto" />
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-text-primary">Verification Failed</h1>
@@ -104,14 +104,14 @@ function PaymentCallbackContent() {
 
   if (isPaid) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
         <motion.div
-          className="max-w-md w-full"
+          className="w-full max-w-md mx-auto"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <Card className="bg-surface border-border  w-full text-center p-8 space-y-6 overflow-hidden">
+          <Card className="bg-surface border-border w-full text-center p-8 space-y-6">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -159,9 +159,9 @@ function PaymentCallbackContent() {
 
   // Fallback
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
       <motion.div
-        className="max-w-md w-full"
+        className="w-full max-w-md mx-auto"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}

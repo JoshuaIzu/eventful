@@ -30,7 +30,7 @@ export function MobileNav() {
       icon: User,
       roles: ["CREATOR", "EVENTEE"],
     },
-  ].filter((item) => !user || item.roles.includes(user.role));
+  ].filter((item) => user ? item.roles.includes(user.role) : false);
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-lg border-t border-border sm:hidden">

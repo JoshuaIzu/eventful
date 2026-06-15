@@ -8,7 +8,7 @@ import {
   Ticket,
   LayoutDashboard,
   Scan,
-  Settings,
+  User,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -42,7 +42,9 @@ export function DesktopSidebar() {
       icon: Scan,
       roles: ["CREATOR", "EVENTEE"],
     },
-  ].filter((item) => !user || item.roles.includes(user.role));
+  ].filter((item) => user ? item.roles.includes(user.role): false);
+
+  const  isProfileActive = pathname === "/profile";
 
   return (
     <aside className="hidden sm:flex flex-col w-64 bg-surface border-r border-border h-screen sticky top-0">
@@ -85,18 +87,36 @@ export function DesktopSidebar() {
       </nav>
 
       <div className="p-4 border-t border-border space-y-1">
-        <button className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-all duration-200 group">
-          <Settings className="w-5 h-5 text-text-muted group-hover:text-text-secondary" />
-          <span className="text-sm font-medium">Settings</span>
-        </button>
-        <button
-          onClick={logout}
-          className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-error hover:bg-error/10 transition-all duration-200 group"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="text-sm font-medium">Logout</span>
-        </button>
-      </div>
-    </aside>
-  );
+        {user && (
+         <Link
+              href="/profile"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 w-full rounded-md transition-all duration-200 group",
+                isProfileActive
+                  ? "bg-accent/10 text-accent"
+                  : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary"
+              )}
+            >
+              <User
+                className={cn(
+                  "w-5 h-5",
+                  isProfileActive
+                    ? "text-accent"
+                    : "text-text-muted group-hover:text-text-secondary"
+                )}
+              />
+              <span className="text-sm font-medium">Profile</span>
+            </Link>
+          )}
+
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-error hover:bg-error/10 transition-all duration-200 group"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="text-sm font-medium">Logout</span>
+          </button>
+        </div>
+      </aside>
+    );
 }
