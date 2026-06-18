@@ -52,6 +52,43 @@ export class EventController {
     }
   };
 
+  public update = async (req: IAuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const eventId  = req.params.eventId as string;
+      const updateEvent = await this.eventService.updateEvent(eventId, req.user!.sub, req.body)
+      res.status(200).json(updateEvent);
+    } catch (error: any) {
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+
+      if (message === 'EVENT_NOT_FOUND') {
+        res.status(404).json({ error: 'NOT_FOUND', message: 'Event not found.' });
+      }
+      else if (message === 'UNAUTHORIZED_ACCESS') {
+        res.status(403).json({ error:'FORBIDDEN', message: 'You are not authorized to update this event.'})
+      }
+      else if (message === 'EVENT_LOCKED_HAS_TICKETS') {
+        res.status(409).json({ error: 'CONFLICT', message: 'Cannot change this event details as it has tickets.' });
+      }
+      else {
+        res.status(500).json({ error: 'SERVER_ERROR', message });
+      }
+    }
+  }
+
+  public delete = async (req: IAuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const  eventId  = req.params.eventId as string;
+      await this.eventService.deleteEvent(eventId, req.user!.sub);
+      res.status(204).end();
+    } catch (error: any) {
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+
+      if (message === 'EVENT_NOT_FOUND') res.status(404).json({ error: 'NOT_FOUND', message: "Event not found."});
+      else if (message === 'UNAUTHORIZED_ACCESS') res.status(403).json({ error: 'FORBIDDEN', message: 'You are not authorized to delete this event.' });
+      else if (error.message === 'EVENT_HAS_TICKETS') res.status(409).json({ error: 'CONFLICT', message: 'Cannot delete this event as it has tickets.' });
+      else res.status(500).json({ error: 'SERVER_ERROR', message: 'An unexpected error occurred.' });
+    }
+  }
   public listPopular = async (_req: IAuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const events = await this.eventService.getActivePopularEvents();

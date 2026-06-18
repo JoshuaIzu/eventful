@@ -7,7 +7,6 @@ import { useVerifyPayment } from "@/hooks/use-checkout"
 import { LoadingCarousel } from "@/components/ui/loading-carousel"
 import { Button } from "@/components/ui/button"
 import { BorderBeamButton } from "@/components/ui/border-beam-button"
-import { Card } from "@/components/ui/card"
 import { CheckCircle, XCircle, Ticket } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -15,7 +14,7 @@ import { motion } from "framer-motion"
 export default function PaymentCallbackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-background grid place-items-center p-4">
         <LoadingCarousel tips={["Loading..."]} />
       </div>
     }>
@@ -33,13 +32,13 @@ function PaymentCallbackContent() {
 
   if (!reference) {
     return (
-      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-background grid place-items-center p-4 sm:p-8">
         <motion.div
           className="w-full max-w-md mx-auto"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           >
-        <Card className="bg-surface border-border w-full text-center p-8 space-y-6">
+        <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-2xl space-y-6 w-full min-w-[300px] text-center">
           <XCircle className="w-16 h-16 text-error mx-auto" />
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-text-primary">Invalid Payment</h1>
@@ -48,7 +47,7 @@ function PaymentCallbackContent() {
           <Button onClick={() => router.push("/events")} className="w-full">
             Browse Events
           </Button>
-        </Card>
+        </div>
         </motion.div>
       </div>
     )
@@ -56,7 +55,7 @@ function PaymentCallbackContent() {
 
   if (isLoading || data?.status === "PENDING") {
     return (
-      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-background grid place-items-center p-4">
         <LoadingCarousel
           tips={[
             "Verifying your payment...",
@@ -70,13 +69,14 @@ function PaymentCallbackContent() {
 
   if (isError) {
     return (
-      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-background grid place-items-center p-4 sm:p-8">
         <motion.div
           className="w-full max-w-md mx-auto"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <Card className="bg-surface border-border w-full text-center p-8 space-y-6">
+          <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-2xl space-y-6 w-full min-w-[300px] text-center">
             <XCircle className="w-16 h-16 text-error mx-auto" />
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-text-primary">Verification Failed</h1>
@@ -86,15 +86,15 @@ function PaymentCallbackContent() {
               </p>
               <p className="text-xs text-text-muted font-mono break-all">{reference}</p>
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => router.push("/tickets")} className="flex-1">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button variant="outline" onClick={() => router.push("/tickets")} className="flex-1 min-h-[44px]">
                 My Tickets
               </Button>
               <Button onClick={() => router.push("/events")} className="flex-1">
                 Browse Events
               </Button>
             </div>
-          </Card>
+          </div>
         </motion.div>
       </div>
     )
@@ -104,21 +104,28 @@ function PaymentCallbackContent() {
 
   if (isPaid) {
     return (
-      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-background grid place-items-center p-4 sm:p-8">
         <motion.div
           className="w-full max-w-md mx-auto"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
-          <Card className="bg-surface border-border w-full text-center p-8 space-y-6">
+          <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-2xl w-full min-w-[300px] text-center">
             <motion.div
+              className="mb-6"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              transition={{ type: "spring", stiffness: 320, damping: 18, delay: 0.25 }}
             >
               <CheckCircle className="w-16 h-16 text-success mx-auto" />
             </motion.div>
+            <motion.div
+              className="space-y-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.4, ease: "easeOut" }}
+            >
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-text-primary">Payment Successful!</h1>
               <p className="text-text-secondary">
@@ -139,19 +146,20 @@ function PaymentCallbackContent() {
                 </span>
               </p>
             </div>
-            <div className="flex gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Link href="/events" className="flex-1">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full min-h-[44px]">
                   Browse More
                 </Button>
               </Link>
               <Link href="/tickets" className="flex-1">
-                <BorderBeamButton className="w-full" variantColor="colorful">
+                <BorderBeamButton className="w-full min-h-[44px]" variantColor="colorful">
                   View My Tickets
                 </BorderBeamButton>
               </Link>
             </div>
-          </Card>
+            </motion.div>
+          </div>
         </motion.div>
       </div>
     )
@@ -159,24 +167,24 @@ function PaymentCallbackContent() {
 
   // Fallback
   return (
-    <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen w-full bg-background grid place-items-center p-4 sm:p-8">
       <motion.div
         className="w-full max-w-md mx-auto"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         >
-        <Card className="bg-surface border-border w-full text-center p-8 space-y-6">
+        <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-2xl space-y-6 w-full min-w-[300px] text-center">
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-text-primary">Payment Status Unknown</h1>
             <p className="text-text-secondary">
               Your payment is still being processed. Check your tickets page for updates.
             </p>
           </div>
-          <Button onClick={() => router.push("/tickets")} className="w-full">
+          <Button onClick={() => router.push("/tickets")} className="w-full min-h-[44px]">
             Go to My Tickets
           </Button>
-        </Card>
+        </div>
       </motion.div>
     </div>
   )

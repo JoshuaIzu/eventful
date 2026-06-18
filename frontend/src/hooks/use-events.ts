@@ -13,13 +13,6 @@ export function useEvents() {
   });
 }
 
-export function usePopularEvents() {
-  return useQuery<IEvent[]>({
-    queryKey: ["events", "popular"],
-    queryFn: () => api.get("/events/popular").then((r) => r.data),
-    staleTime: 60 * 1000,
-  });
-}
 
 export function useMyEvents() {
   return useQuery<IEvent[]>({
@@ -41,7 +34,28 @@ export function useCreateEvent() {
   return useMutation({
     mutationFn: (data: any) => api.post("/events", data).then((r) => r.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["events"] });
+      void queryClient.invalidateQueries({ queryKey: ["events"] });
     },
   });
 }
+
+export function useUpdateEvent() {
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      api.patch(`/events/${id}`, data).then((r) => r.data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
+}
+
+export function useDeleteEvent() {
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/events/${id}`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
+}
+
+

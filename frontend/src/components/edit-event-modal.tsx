@@ -5,17 +5,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { BorderBeamButton } from "@/components/ui/border-beam-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useCreateEvent } from "@/hooks/use-events"
+import { useUpdateEvent } from "@/hooks/use-events"
 import { toast } from "sonner"
+import type { IEvent } from "@/types"
 
-
-interface CreateEventModalProps {
+interface EditEventModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  event: IEvent | null
 }
 
-export function CreateEventModal({ open, onOpenChange }: CreateEventModalProps) {
-  const createEvent = useCreateEvent()
+function toLocalDatetime(isoDate: string) {
+  const date = new Date(isoDate)
+  const offset = date.getTimezoneOffset()
+  const local = new Date(date.getTime() - offset * 60000)
+  return local.toISOString().slice(0, 16)
+}
+
+export function EditEventModal({ open, onOpenChange, event }: EditEventModalProps) {
+  const updateEvent = useUpdateEvent()
   const [form, setForm] = React.useState({
     title: "",
     description: "",
@@ -25,39 +33,44 @@ export function CreateEventModal({ open, onOpenChange }: CreateEventModalProps) 
     pricingType: "STANDARD" as "STANDARD" | "EARLY_BIRD" | "VIP",
   })
 
+  React.useEffect(() => {
+    if (event) {
+      setForm({
+        title: event.title,
+        description: event.description,
+        date: toLocalDatetime(event.date),
+        basePrice: event.basePrice,
+        reminderType: event.reminderType,
+        pricingType: event.pricingType,
+      })
+    }
+  }, [event])
+
   const handleSubmit = async (e: React.BaseSyntheticEvent) => {
     e.preventDefault()
+    if (!event) return
 
-    const submitDate = new Date(form.date);
-    if (submitDate < new Date()){
-      toast.error("Event date cannot be in the past");
-      return;
-    }
     try {
-      await createEvent.mutateAsync({
-        ...form,
-        basePrice: Number(form.basePrice),
+      await updateEvent.mutateAsync({
+        id: event.id,
+        data: {
+          ...form,
+          basePrice: Number(form.basePrice),
+        },
       })
-      toast.success("Event created successfully!")
+      toast.success("Event updated successfully!")
       onOpenChange(false)
-      setForm({ title: "", description: "", date: "", basePrice: 0, reminderType: "ONE_DAY", pricingType: "STANDARD" })
     } catch (err) {
-      toast.error("Failed to create event.")
+      toast.error("Failed to update event.")
       console.error(err)
     }
   }
-
-  const getLocalMinDateTime = () => {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    return now.toISOString().slice(0, 16);
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create New Event</DialogTitle>
+          <DialogTitle>Edit Event</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -86,7 +99,6 @@ export function CreateEventModal({ open, onOpenChange }: CreateEventModalProps) 
               type="datetime-local"
               value={form.date}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
-              min={getLocalMinDateTime()}
               required
             />
           </div>
@@ -133,9 +145,9 @@ export function CreateEventModal({ open, onOpenChange }: CreateEventModalProps) 
             <BorderBeamButton
               type="submit"
               variantColor="sunset"
-              disabled={createEvent.isPending}
+              disabled={updateEvent.isPending}
             >
-              {createEvent.isPending ? "Creating..." : "Create Event"}
+              {updateEvent.isPending ? "Saving..." : "Save Changes"}
             </BorderBeamButton>
           </DialogFooter>
         </form>

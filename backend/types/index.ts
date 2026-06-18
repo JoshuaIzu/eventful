@@ -62,6 +62,15 @@ export interface ICreateEventDTO {
     pricingType: PricingType;
 }
 
+export interface IUpdateEventDTO{
+    title?: string;
+    description?: string;
+    date?: Date | string;
+    basePrice?: number;
+    reminderType?: ReminderType;
+    pricingType?: PricingType;
+}
+
 export interface IOverallAnalytics {
     totalEvents: number;
     totalAttendeesCount: number;
@@ -130,9 +139,3 @@ export interface IRateLimiterConfig {
     maxRequests: number;
 }
 
-export interface IRateLimitResult {
-    isAllowed: boolean;
-    currentCount: number;
-    remaining: number;
-    ttl: number;
-}

@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { IEventRepository } from './event.repository.interface'
-import { IEvent, ICreateEventDTO, ReminderType, PricingType } from "../types";
+import { IEvent, ICreateEventDTO, IUpdateEventDTO, ReminderType, PricingType } from "../types";
 
 
 export class EventRepository implements IEventRepository {
@@ -34,7 +34,23 @@ export class EventRepository implements IEventRepository {
         });
         return this.mapToEvent(record);
     }
-     public async findByCreatorId(creatorId: string): Promise<IEvent[]> {
+
+    public async update(eventId: string, dto: IUpdateEventDTO, calculatedPrice?: number): Promise<IEvent> {
+        const dataToUpdate: any = { ...dto };
+        if(dto.date) dataToUpdate.date = new Date(dto.date);
+        if(calculatedPrice !== undefined) dataToUpdate.calculatedPrice = calculatedPrice;
+
+        const record = await this.db.event.update({
+            where: { id: eventId },
+            data: dataToUpdate,
+        });
+        return this.mapToEvent(record)
+    };
+
+    public async delete(eventId: string): Promise<void> {
+        await this.db.event.delete({ where: { id: eventId } });
+    };
+    public async findByCreatorId(creatorId: string): Promise<IEvent[]> {
         const records = await this.db.event.findMany({
             where: { creatorId },
             orderBy: { date: 'asc' },
