@@ -6,19 +6,27 @@ import { StandardPricingStrategy } from './strategies/standard.pricing.strategy'
 import { EarlyBirdPricingStrategy } from './strategies/earlybird.pricing.strategy';
 import { VipPricingStrategy } from './strategies/vip.pricing.strategy';
 import { Redis } from 'ioredis';
+import {ITicketRepository} from "./ticket.repository.interface";
 
 describe('Vertical Slice 2: Event Management & Pricing Strategies', () => {
   let eventService: EventService;
   let mockEventRepo: jest.Mocked<IEventRepository>;
+  let mockTicketRepo: jest.Mocked<ITicketRepository>;
   let mockCache: jest.Mocked<Redis>;
   let pricingStrategies: Map<PricingType, IPricingStrategy>;
 
   beforeEach(() => {
+    mockTicketRepo = {
+  countPaidTicketsByEvent: jest.fn(),
+  } as any;
+
     mockEventRepo = {
       findById: jest.fn(),
       findAll: jest.fn(),
       findByCreatorId: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
     };
     mockCache = {
       del: jest.fn(),
@@ -32,7 +40,7 @@ describe('Vertical Slice 2: Event Management & Pricing Strategies', () => {
       ['VIP', new VipPricingStrategy()],
     ]);
 
-    eventService = new EventService(mockEventRepo, mockCache, pricingStrategies);
+    eventService = new EventService(mockEventRepo, mockTicketRepo, mockCache, pricingStrategies);
   });
 
   describe('Event Creation & Strategy Application', () => {

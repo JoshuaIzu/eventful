@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useAnalyticsOverview } from "@/hooks/use-analytics"
-import { useMyEvents } from "@/hooks/use-events"
+import {useDeleteEvent, useMyEvents} from "@/hooks/use-events"
 import { CreatorAnalyticsCard } from "@/components/analytics-card"
 import { DesktopSidebar } from "@/components/desktop-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
@@ -10,16 +10,54 @@ import { LoadingCarousel } from "@/components/ui/loading-carousel"
 import { BorderBeamButton } from "@/components/ui/border-beam-button"
 import { Plus, Edit2, Copy, Trash2, LayoutDashboard } from "lucide-react"
 import { CreateEventModal } from "@/components/create-event-modal"
+import { EditEventModal } from "@/components/edit-event-modal"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { toast } from "sonner"
+import type { IEvent } from "@/types"
 
 export default function CreatorDashboardPage() {
   const { data: stats, isLoading: statsLoading } = useAnalyticsOverview()
   const [isCreateOpen, setCreateOpen] = React.useState(false)
   const { data: events, isLoading: eventsLoading } = useMyEvents()
+  const [editEvent, setEditEvent] = React.useState<IEvent | null>(null)
+  const deleteEvent = useDeleteEvent()
+
 
   const isLoading = statsLoading || eventsLoading
+
+  const handleCopyLink = async (eventId: string) => {
+      const url = `${window.location.origin}/events/${eventId}`
+      try {
+        await navigator.clipboard.writeText(url)
+        toast.success("Event link copied!")
+      } catch {
+        toast.error("Could not copy link. Please copy it manually.")
+      }
+    }
+
+  const handleDelete = async (event: IEvent) => {
+  if (!window.confirm(`
+  }
+  }Delete "${event.title}"? This cannot be undone.`)) return
+  try {
+    await deleteEvent.mutateAsync(event.id)
+    toast.success("Event deleted.")
+  } catch (err: any) {
+    const msg = err?.response?.data?.message || err?.message
+    if (msg === "EVENT_NOT_FOUND") {
+      toast.error("Event no longer exists.")
+    } else if (msg === "UNAUTHORIZED_ACTION") {
+      toast.error("You don't have permission to delete this event.")
+    } else if (msg === "EVENT_HAS_TICKETS") {
+      toast.error("Cannot delete event — it has active tickets.")
+    } else {
+      toast.error("Failed to delete event.")
+    }
+  }
+}
+
 
   return (
     <div className="flex min-h-screen bg-background text-text-primary">
@@ -96,13 +134,13 @@ export default function CreatorDashboardPage() {
                                     </div>
                                     
                                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                                        <Button variant="ghost" size="icon" className="text-text-muted hover:text-text-primary">
+                                        <Button variant="ghost" size="icon" className="text-text-muted hover:text-text-primary" onClick={() => setEditEvent(event)}>
                                             <Edit2 className="w-4 h-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="text-text-muted hover:text-text-primary">
+                                        <Button variant="ghost" size="icon" className="text-text-muted hover:text-text-primary" onClick={() => handleCopyLink(event.id)}>
                                             <Copy className="w-4 h-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="text-error hover:bg-error/10">
+                                        <Button variant="ghost" size="icon" className="text-error hover:bg-error/10" onClick={() => handleDelete(event)}>
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                         <BorderBeamButton variantColor="mono" size="sm" className="ml-2 font-mono text-[10px]">
@@ -129,6 +167,7 @@ export default function CreatorDashboardPage() {
         </BorderBeamButton>
       </main>
       <CreateEventModal open={isCreateOpen} onOpenChange={setCreateOpen} />
+      <EditEventModal open={!!editEvent} onOpenChange={(open) => { if (!open) setEditEvent(null) }} event={editEvent} />
       <MobileNav />
     </div>
   )

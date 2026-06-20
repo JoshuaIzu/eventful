@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useCreateEvent } from "@/hooks/use-events"
 import { toast } from "sonner"
+import { IEvent } from "@/types";
 
 
 interface CreateEventModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  event?: IEvent | null
 }
 
 export function CreateEventModal({ open, onOpenChange }: CreateEventModalProps) {

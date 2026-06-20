@@ -36,6 +36,14 @@ import {createSendReceiptProcessor} from "./queue/processors/send.receipt.proces
 import { JOB_NAMES } from './queue/job.names';
 import { ResendEmailService } from './queue/services/email.service';
 import { NOTIFICATION_QUEUE_NAME, createNotificationQueue } from './queue/notification-queue';
+import { createSendReminderProcessor } from "./queue/processors/send.reminder.processor";
+import { ReminderQueue, REMINDER_QUEUE_NAME } from './queue/reminder-queue';
+import { QueueObserver } from './queue/queue.observer';
+import { ReminderObserver } from './checkout/observer/reminder.observer';
+import { OneDayReminderStrategy } from './events/strategies/oneday.reminder.strategy';
+import { OneWeekReminderStrategy } from './events/strategies/oneweek.reminder.strategy';
+import { IReminderStrategy } from './events/strategies/reminder.strategy.interface.';
+import { ReminderType } from './types';
 import { scanAuthMiddleware } from './middleware/scan.auth.middleware';
 import { ScanController } from './events/scan.controller';
 import { createScanRoutes } from './events/scan.routes';
@@ -49,6 +57,11 @@ const app = express();
 const prisma = new PrismaClient({
     adapter: new PrismaPg(process.env.DATABASE_URL!),
 })
+
+const reminderStrategies = new Map<ReminderType, IReminderStrategy>([
+    ['ONE_DAY', new OneDayReminderStrategy()],
+    ['ONE_WEEK', new OneWeekReminderStrategy()],
+]);
 
 const pricingStrategies = new Map<PricingType, IPricingStrategy>([
   ['STANDARD', new StandardPricingStrategy()],
@@ -80,6 +93,26 @@ worker.on('completed', (job) => console.log(`[worker] ${job?.name ?? 'unknown'}#
 worker.on('failed',    (job, err) => console.error(`[worker] ${job?.name ?? 'unknown'}#${job?.id ?? '?'} failed:`, err));
 console.log(`[worker] listening on "${NOTIFICATION_QUEUE_NAME}" (concurrency=${Number(process.env.WORKER_CONCURRENCY) || 5})`);
 
+const reminderQueue = new ReminderQueue();
+const handleSendReminder = createSendReminderProcessor(emailService);
+
+const reminderWorker = new Worker(
+    REMINDER_QUEUE_NAME,
+    async (job) => {
+        switch (job.name) {
+            case JOB_NAMES.SEND_REMINDER:
+                return handleSendReminder(job);
+            default:
+                throw new Error(`Unknown job name: ${job.name}`);
+        }
+    },
+    { connection: redisConfig, concurrency: Number(process.env.WORKER_CONCURRENCY) || 5 }
+);
+
+reminderWorker.on('completed', (job) => console.log(`[reminder-worker] ${job?.name ?? 'unknown'}#${job?.id ?? '?'} completed`));
+reminderWorker.on('failed',    (job, err) => console.error(`[reminder-worker] ${job?.name ?? 'unknown'}#${job?.id ?? '?'} failed:`, err));
+console.log(`[reminder-worker] listening on "${REMINDER_QUEUE_NAME}" (concurrency=${Number(process.env.WORKER_CONCURRENCY) || 5})`);
+
 
 app.use(express.json());
 const apiRateLimiter = new AtomicRedisRateLimiter(redis);
@@ -96,7 +129,7 @@ const eventSubject       = new EventSubject();
 //Service
 const authService = new AuthService(userRepo, redis);
 const authenticateToken = createAuthMiddleWare(authService);
-const eventService = new EventService(eventRepo, redis, pricingStrategies);
+const eventService = new EventService(eventRepo, ticketRepo, redis, pricingStrategies);
 const analyticsService = new AnalyticsService(ticketRepo, redis);
 const checkoutService    = new CheckoutService(eventRepo, ticketRepo, paymentProvider, eventSubject);
 
@@ -114,6 +147,21 @@ const notificationDispatcher = new BullMQNotificationDispatcher(notificationQueu
 
 eventSubject.attach('PAYMENT_SUCCESS', new TicketQrObserver(ticketRepo));
 eventSubject.attach('PAYMENT_SUCCESS', new NotificationObserver(eventRepo, notificationDispatcher));
+eventSubject.attach('PAYMENT_SUCCESS', new ReminderObserver(eventRepo, userRepo, reminderQueue, reminderStrategies));
+
+// Queue Observer - monitors queue status and logs to console
+const queueObserver = new QueueObserver(
+  new Map([
+    [NOTIFICATION_QUEUE_NAME, notificationQueue],
+    [REMINDER_QUEUE_NAME, reminderQueue.getQueue()],
+  ]),
+  {
+    intervalMs: Number(process.env.QUEUE_OBSERVER_INTERVAL_MS) || 30000,
+    logPrefix: '[queue-monitor]',
+  }
+);
+
+queueObserver.startPolling();
 
 const dev = process.env.NODE_ENV !== 'production';
 const frontendDir = path.join(__dirname, dev ? '../frontend' : '../../frontend');
@@ -128,21 +176,24 @@ nextApp.prepare().then(() => {
   app.use('/api/scan',       createScanRoutes(scanController, standardRouteLimiter, scanAuthMiddleware));
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-  // Serve static files from the public folder
+
   app.use(express.static(path.join(frontendDir, 'public')));
 
-  // Explicitly serve Next.js compiled assets (CSS/JS)
+
   app.use('/_next', express.static(path.join(frontendDir, '.next')));
 
-  // Catch-all: Hand over all other requests to Next.js React renderer
+
   app.all('*', (req, res) => {
     return handle(req, res);
   });
 
   const shutdown = async (signal: string) => {
     console.log(`[server] received ${signal}, shutting down…`);
+    queueObserver.stopPolling();
     await worker.close();
+    await reminderWorker.close();
     await notificationQueue.close();
+    await reminderQueue.close();
     await prisma.$disconnect();
     process.exit(0);
   };
