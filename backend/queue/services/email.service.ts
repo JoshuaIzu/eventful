@@ -41,7 +41,7 @@ export class ResendEmailService implements IEmailService {
 
   constructor(apiKey?: string) {
     this.resend = new Resend(apiKey || process.env.RESEND_API_KEY);
-    this.fromEmail = process.env.RESEND_FROM_ADDRESS || 'noreply@eventful.com';
+    this.fromEmail = process.env.RESEND_FROM_ADDRESS ?? 'ticketsreminder@joshuauzuegbu.tech';
   }
 
   async sendTicketReceipt(receipt: ITicketReceipt): Promise<void> {
