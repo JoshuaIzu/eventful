@@ -7,6 +7,7 @@ export interface ITicketReceipt {
   eventId: string;
   reference: string;
   eventName: string;
+  qrCodeUrl: string | null;
 }
 
 export interface IEventReminder {
@@ -45,8 +46,9 @@ export class ResendEmailService implements IEmailService {
   }
 
   async sendTicketReceipt(receipt: ITicketReceipt): Promise<void> {
-    const { to, ticketId, eventId, reference, eventName } = receipt;
+    const { to, ticketId, eventId, reference, eventName, qrCodeUrl } = receipt;
 
+    const qrBase64 = qrCodeUrl?.includes(',') ? qrCodeUrl.split(',')[1]: null;
     await this.resend.emails.send({
       from: this.fromEmail,
       to,
@@ -60,10 +62,13 @@ export class ResendEmailService implements IEmailService {
           <li><strong>Event ID:</strong> ${esc(eventId)}</li>
           <li><strong>Reference:</strong> ${esc(reference)}</li>
         </ul>
+        ${qrBase64 ? `<p><img src="cid:ticket-qr" alt="Ticket QR code" width="200" height="200"/></p>` : ''}
       `,
+      attachments: qrBase64
+        ? [{ filename: 'ticket-qr.png', content: qrBase64, contentType: 'image/png', contentId: 'ticket-qr' }]
+        : [],
     },
-        { idempotencyKey: `receipt:${ticketId}` },
-    );
+        { idempotencyKey: `receipt:${ticketId}` });
   }
 
 

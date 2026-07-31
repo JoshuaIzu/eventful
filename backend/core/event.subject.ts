@@ -23,14 +23,15 @@ export class EventSubject {
         }
     }
    public async notify<K extends AppEvent>(event: K, payload: EventPayloadMap[K]): Promise<void> {
-    const set = this.observers.get(event);
-    if (!set) return;
-    const results = await Promise.allSettled(
-        Array.from(set).map(observer => observer.update(payload))
-    );
-    results
-        .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
-        .forEach(r => console.error('[EventSubject] Observer failed:', r.reason));
-}
+       const set = this.observers.get(event);
+       if (!set) return;
 
+       for (const observer of set) {
+           try {
+               await observer.update(payload);
+           } catch (err) {
+               console.error('[EventSubject] Observer failed:', err);
+           }
+       }
+   }
 }

@@ -52,7 +52,7 @@ export class AuthController {
                 const result = await this.authService.register(dto);
                 res.status(201).json(result);
         } catch (error: unknown) {
-            if (error instanceof Error && error.message === 'User with email already exists') {
+            if (error instanceof Error && error.message === 'User with this email already exists') {
                 res.status(409).json({
                     error: 'conflict',
                     message: 'This email is already registered',

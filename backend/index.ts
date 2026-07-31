@@ -74,7 +74,6 @@ const pricingStrategies = new Map<PricingType, IPricingStrategy>([
 app.set('trust proxy', 1);
 
 const emailService = new ResendEmailService();
-const handleSendReceipt = createSendReceiptProcessor(emailService);
 
 const worker = new Worker(
     NOTIFICATION_QUEUE_NAME,
@@ -123,6 +122,10 @@ const userRepo = new UserRepository(prisma);
 const eventRepo = new EventRepository(prisma);
 const ticketRepo = new TicketRepository(prisma);
 
+
+const handleSendReceipt = createSendReceiptProcessor(emailService, ticketRepo);
+
+
 const paymentProvider    = new PaystackProvider();
 const eventSubject       = new EventSubject();
 
@@ -146,7 +149,7 @@ const notificationQueue     = createNotificationQueue();
 const notificationDispatcher = new BullMQNotificationDispatcher(notificationQueue, userRepo);
 
 eventSubject.attach('PAYMENT_SUCCESS', new TicketQrObserver(ticketRepo));
-eventSubject.attach('PAYMENT_SUCCESS', new NotificationObserver(eventRepo, notificationDispatcher));
+eventSubject.attach('PAYMENT_SUCCESS', new NotificationObserver(eventRepo, ticketRepo, notificationDispatcher));
 eventSubject.attach('PAYMENT_SUCCESS', new ReminderObserver(eventRepo, userRepo, reminderQueue, reminderStrategies));
 
 // Queue Observer - monitors queue status and logs to console

@@ -1,6 +1,7 @@
 import { Job } from 'bullmq';
 import { IEmailService, ITicketReceipt } from '../services/email.service';
 import { JOB_NAMES } from '../job.names';
+import { ITicketRepository } from "../../events/ticket.repository.interface";
 
 export interface ISendReceiptJobData {
     to: string;
@@ -12,14 +13,16 @@ export interface ISendReceiptJobData {
 
 export const SEND_RECEIPT_JOB_NAME = JOB_NAMES.SEND_RECEIPT;
 
-export function createSendReceiptProcessor(emailService: IEmailService) {
+export function createSendReceiptProcessor(emailService: IEmailService, ticketRepo: ITicketRepository) {
     return async (job: Job<ISendReceiptJobData>): Promise<void> => {
+        const ticket = await ticketRepo.findByTicketId(job.data.ticketId);
         const receipt: ITicketReceipt = {
             to:  job.data.to,
             ticketId: job.data.ticketId,
             eventId: job.data.eventId,
             reference: job.data.reference,
             eventName: job.data.eventName,
+            qrCodeUrl: ticket?.qrCodeUrl ?? null,
         };
         await emailService.sendTicketReceipt(receipt);
     };

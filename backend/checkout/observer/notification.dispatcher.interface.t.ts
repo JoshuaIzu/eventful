@@ -1,9 +1,10 @@
 export interface INotificationDispatcher {
   dispatchNotification(
     ticketId: string,
-    eventId: string,
     eventeeId: string,
+    eventId: string,
     reference: string,
-    eventName: string
+    eventName: string,
+    qrCodeUrl: string | null
   ): Promise<void>;
 }
