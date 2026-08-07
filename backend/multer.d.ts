@@ -1,15 +1,22 @@
 declare module 'multer' {
-  interface FileFilterCallback {
+  import { RequestHandler } from 'express';
+
+  export interface FileFilterCallback {
     (error: Error | null, acceptFile: boolean): void;
   }
 
-  interface Multer {
+  export interface Multer {
     (options?: MulterOptions): Multer;
     memoryStorage(): StorageEngine;
     diskStorage(options: DiskStorageOptions): StorageEngine;
+    single(fieldName: string): RequestHandler;
+    array(fieldName: string, maxCount?: number): RequestHandler;
+    fields(fields: Array<{ name: string; maxCount?: number }>): RequestHandler;
+    none(): RequestHandler;
+    any(): RequestHandler;
   }
 
-  interface MulterOptions {
+  export interface MulterOptions {
     storage?: StorageEngine;
     limits?: {
       fileSize?: number;
@@ -23,7 +30,7 @@ declare module 'multer' {
     ) => void;
   }
 
-  interface StorageEngine {
+  export interface StorageEngine {
     _handleFile(
       req: any,
       file: any,
@@ -36,11 +43,11 @@ declare module 'multer' {
     ): void;
   }
 
-  interface DiskStorageOptions {
+  export interface DiskStorageOptions {
     destination?: string | ((req: any, file: any, callback: (error: Error | null, destination: string) => void) => void);
     filename?: string | ((req: any, file: any, callback: (error: Error | null, filename: string) => void) => void);
   }
 
   const multer: Multer;
-  export = multer;
+  export default multer;
 }
