@@ -12,6 +12,6 @@
     "moduleResolution": "node",
     "types": ["node"]
   },
-  "include": ["auth/**/*.ts", "events/**/*.ts", "checkout/**/*.ts", "core/**/*.ts", "middleware/**/*.ts", "config/**/*.ts","queue/**/*.ts", "index.ts","types/**/*.ts"],
+  "include": ["auth/**/*.ts", "events/**/*.ts", "checkout/**/*.ts", "core/**/*.ts", "middleware/**/*.ts", "config/**/*.ts","queue/**/*.ts", "uploads/**/*.ts", "index.ts","types/**/*.ts", "*.d.ts"],
   "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*", "jest.config.ts", "prisma.config.ts"]
 }
