@@ -1,11 +1,11 @@
 import {RequestHandler, Router} from 'express';
-import multer, { FileFilterCallback } from 'multer';
+import multer from 'multer';
 import { UploadController } from './upload.controller';
 
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: (_req, file, cb: FileFilterCallback) => {
+    fileFilter: (_req: any, file: any, cb: any) => {
         if (file.mimetype.startsWith('image/')) cb(null, true);
         else cb(new Error('ONLY_IMAGES_ALLOWED'));
     },

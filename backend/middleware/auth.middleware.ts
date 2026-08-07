@@ -5,7 +5,14 @@ import { AuthService } from "../auth/auth.service";
 
 export interface IAuthenticatedRequest extends Request {
     user?: IJwtPayload;
-    file?: Express.Multer.File;
+    file?: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        size: number;
+        buffer: Buffer;
+    };
 }
 
 export function createAuthMiddleWare(authService: AuthService) {
