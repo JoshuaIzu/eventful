@@ -20,6 +20,7 @@ export interface IEvent {
     calculatedPrice: number;
     reminderType: ReminderType;
     pricingType: PricingType;
+    imageUrl?: string | null;
     createdAt: Date;
 }
 
@@ -60,6 +61,7 @@ export interface ICreateEventDTO {
     basePrice: number;
     reminderType: ReminderType;
     pricingType: PricingType;
+    imageUrl?: string;
 }
 
 export interface IUpdateEventDTO{
@@ -69,6 +71,7 @@ export interface IUpdateEventDTO{
     basePrice?: number;
     reminderType?: ReminderType;
     pricingType?: PricingType;
+    imageUrl?: string;
 }
 
 export interface IOverallAnalytics {

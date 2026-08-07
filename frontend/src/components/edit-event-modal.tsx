@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { useUpdateEvent } from "@/hooks/use-events"
 import { toast } from "sonner"
 import type { IEvent } from "@/types"
+import { uploadEventImage } from "@/lib/upload"
+import {useImageFileHandler} from "@/lib/file-utils";
 
 interface EditEventModalProps {
   open: boolean
@@ -32,6 +34,9 @@ export function EditEventModal({ open, onOpenChange, event }: EditEventModalProp
     reminderType: "ONE_DAY" as "ONE_DAY" | "ONE_WEEK",
     pricingType: "STANDARD" as "STANDARD" | "EARLY_BIRD" | "VIP",
   })
+  const [imageFile, setImageFile] = React.useState<File | null>(null);
+  const [preview, setPreview] = React.useState<string | null>(null);
+  const [uploading, setUploading] = React.useState(false);
 
   React.useEffect(() => {
     if (event) {
@@ -43,19 +48,33 @@ export function EditEventModal({ open, onOpenChange, event }: EditEventModalProp
         reminderType: event.reminderType,
         pricingType: event.pricingType,
       })
+      if (event.imageUrl) {
+        setPreview(event.imageUrl)
+      } else {
+        setPreview(null)
+      }
+      setImageFile(null)
     }
   }, [event])
+
+  const handleFileChange  = useImageFileHandler(setImageFile, setPreview)
 
   const handleSubmit = async (e: React.BaseSyntheticEvent) => {
     e.preventDefault()
     if (!event) return
 
     try {
+      let imageUrl: string | undefined
+      if (imageFile) {
+        setUploading(true)
+        imageUrl = await uploadEventImage(imageFile)
+      }
       await updateEvent.mutateAsync({
         id: event.id,
         data: {
           ...form,
           basePrice: Number(form.basePrice),
+          ...(imageUrl ? { imageUrl } : {}),
         },
       })
       toast.success("Event updated successfully!")
@@ -63,6 +82,8 @@ export function EditEventModal({ open, onOpenChange, event }: EditEventModalProp
     } catch (err) {
       toast.error("Failed to update event.")
       console.error(err)
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -91,6 +112,14 @@ export function EditEventModal({ open, onOpenChange, event }: EditEventModalProp
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Event description"
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="image">Event Image</Label>
+            <Input id="image" type="file" accept="image/*" onChange={handleFileChange} />
+            {preview && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={preview} alt="Preview" className="mt-2 w-full h-32 object-cover rounded-md border border-border" />
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="date">Date</Label>
@@ -145,9 +174,9 @@ export function EditEventModal({ open, onOpenChange, event }: EditEventModalProp
             <BorderBeamButton
               type="submit"
               variantColor="sunset"
-              disabled={updateEvent.isPending}
+              disabled={updateEvent.isPending || uploading}
             >
-              {updateEvent.isPending ? "Saving..." : "Save Changes"}
+              {uploading ? "Uploading..." : updateEvent.isPending ? "Saving..." : "Save Changes"}
             </BorderBeamButton>
           </DialogFooter>
         </form>

@@ -22,7 +22,9 @@ export function EventCard({ event }: EventCardProps) {
       <Card className="overflow-hidden bg-surface border-border hover:border-accent transition-colors">
         <div className="relative aspect-video overflow-hidden">
           <Image
-            src={event.imageUrl || "/images/evenful-ui-mockup.png"}
+            src={event.imageUrl
+                ? event.imageUrl.replace("/upload/", "/upload/w_640,c_fill,q_auto,f_auto/")
+                : "/images/evenful-ui-mockup.png"}
             alt={event.title}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-110"
@@ -39,12 +41,12 @@ export function EventCard({ event }: EventCardProps) {
           <h3 className="font-bold text-lg text-text-primary line-clamp-1 group-hover:text-accent transition-colors">
             {event.title}
           </h3>
-          <p className="text-text-secondary text-sm line-clamp-2 min-h-[40px]">
+          <p className="text-text-secondary text-sm line-clamp-2 min-h-10">
             {event.description}
           </p>
         </CardContent>
 
-        <CardFooter className="p-4 pt-0 flex items-center justify-between">
+        <CardFooter className="p-4 pt-0 flex items-center justify-between gap -2 flex-wrap">
           <PriceTag price={event.calculatedPrice} originalPrice={event.pricingType === 'EARLY_BIRD' ? event.basePrice : undefined} />
           <Link href={`/events/${event.id}`}>
             <BorderBeamButton 

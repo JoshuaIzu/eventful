@@ -18,6 +18,9 @@ import { createAuthRoutes } from './auth/auth.routes';
 import { EventController } from "./events/event.controller";
 import { createEventRoutes } from "./events/event.routes";
 import { createAuthMiddleWare } from "./middleware/auth.middleware";
+import { UploadService } from "./uploads/upload.service";
+import { UploadController } from "./uploads/upload.controller";
+import { createUploadRoutes } from "./uploads/upload.routes";
 import { TicketRepository } from "./events/ticket.repository";
 import { AnalyticsService } from "./events/analytics.service";
 import { AnalyticsController } from "./events/analytics.controller";
@@ -143,6 +146,8 @@ const analyticController = new AnalyticsController(analyticsService);
 const checkoutController = new CheckoutController(checkoutService);
 const webhookController  = new WebhookController(paymentProvider, ticketRepo, eventSubject);
 const scanController = new ScanController(ticketRepo);
+const uploadService = new UploadService()
+const uploadController = new UploadController(uploadService);
 
 // Observers
 const notificationQueue     = createNotificationQueue();
@@ -175,8 +180,9 @@ nextApp.prepare().then(() => {
   app.use('/api/auth',      createAuthRoutes(authController, strictAuthLimiter, authenticateToken));
   app.use('/api/events',    createEventRoutes(eventController, standardRouteLimiter, authenticateToken));
   app.use('/api/analytics', createAnalyticsRoutes(analyticController, standardRouteLimiter,authenticateToken));
-  app.use('/api/checkout',   createCheckoutRoutes(checkoutController, webhookController, standardRouteLimiter, authenticateToken));
-  app.use('/api/scan',       createScanRoutes(scanController, standardRouteLimiter, scanAuthMiddleware));
+  app.use('/api/checkout',  createCheckoutRoutes(checkoutController, webhookController, standardRouteLimiter, authenticateToken));
+  app.use('/api/scan',      createScanRoutes(scanController, standardRouteLimiter, scanAuthMiddleware));
+  app.use('/api/uploads',   createUploadRoutes(uploadController, standardRouteLimiter, authenticateToken))
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 

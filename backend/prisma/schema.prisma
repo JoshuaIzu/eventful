@@ -29,6 +29,7 @@ model Event {
   calculatedPrice Float
   reminderType    String
   pricingType     String
+  imageUrl        String?
   createdAt       DateTime @default(now())
   creator         User     @relation("CreatorEvents", fields: [creatorId], references: [id])
   tickets         Ticket[]

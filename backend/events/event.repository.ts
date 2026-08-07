@@ -30,6 +30,7 @@ export class EventRepository implements IEventRepository {
                 calculatedPrice,
                 reminderType: dto.reminderType,
                 pricingType: dto.pricingType,
+                imageUrl: dto.imageUrl,
             },
         });
         return this.mapToEvent(record);
@@ -68,6 +69,7 @@ export class EventRepository implements IEventRepository {
         calculatedPrice: number;
         reminderType: string;
         pricingType: string;
+        imageUrl: string | null;
         createdAt: Date;
     }): IEvent {
         return {
@@ -80,6 +82,7 @@ export class EventRepository implements IEventRepository {
             calculatedPrice: record.calculatedPrice,
             reminderType: record.reminderType as ReminderType,
             pricingType: record.pricingType as PricingType,
+            imageUrl: record.imageUrl ?? null,
             createdAt: record.createdAt,
         };
     }

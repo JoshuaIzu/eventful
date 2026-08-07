@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label"
 import { useCreateEvent } from "@/hooks/use-events"
 import { toast } from "sonner"
 import { IEvent } from "@/types";
-
+import { uploadEventImage } from "@/lib/upload";
+import { useImageFileHandler } from "@/lib/file-utils"
 
 interface CreateEventModalProps {
   open: boolean
@@ -26,6 +27,9 @@ export function CreateEventModal({ open, onOpenChange }: CreateEventModalProps) 
     reminderType: "ONE_DAY" as "ONE_DAY" | "ONE_WEEK",
     pricingType: "STANDARD" as "STANDARD" | "EARLY_BIRD" | "VIP",
   })
+  const [imageFile, setImageFile] = React.useState<File | null>(null);
+  const [preview, setPreview] = React.useState<string | null>(null);
+  const [uploading, setUploading] = React.useState(false);
 
   const handleSubmit = async (e: React.BaseSyntheticEvent) => {
     e.preventDefault()
@@ -36,18 +40,29 @@ export function CreateEventModal({ open, onOpenChange }: CreateEventModalProps) 
       return;
     }
     try {
+      let imageUrl: string | undefined
+      if (imageFile) {
+          setUploading(true)
+          imageUrl = await uploadEventImage(imageFile)
+      }
       await createEvent.mutateAsync({
         ...form,
         basePrice: Number(form.basePrice),
+        ...(imageUrl ? { imageUrl } : {}),
       })
       toast.success("Event created successfully!")
       onOpenChange(false)
       setForm({ title: "", description: "", date: "", basePrice: 0, reminderType: "ONE_DAY", pricingType: "STANDARD" })
+      setImageFile(null)
+      setPreview(null)
     } catch (err) {
       toast.error("Failed to create event.")
       console.error(err)
+    } finally {
+      setUploading(false)
     }
   }
+  const handleFileChange  = useImageFileHandler(setImageFile, setPreview)
 
   const getLocalMinDateTime = () => {
     const now = new Date();
@@ -80,6 +95,14 @@ export function CreateEventModal({ open, onOpenChange }: CreateEventModalProps) 
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Event description"
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="image">Event Image</Label>
+            <Input id="image" type="file" accept="image/*" onChange={handleFileChange} />
+            {preview && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={preview} alt="Preview" className="mt-2 w-full h-32 object-cover rounded-md border border-border" />
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="date">Date</Label>
@@ -135,9 +158,9 @@ export function CreateEventModal({ open, onOpenChange }: CreateEventModalProps) 
             <BorderBeamButton
               type="submit"
               variantColor="sunset"
-              disabled={createEvent.isPending}
+              disabled={createEvent.isPending || uploading}
             >
-              {createEvent.isPending ? "Creating..." : "Create Event"}
+              {uploading ? "Uploading..." : createEvent.isPending ? "Creating..." : "Create Event"}
             </BorderBeamButton>
           </DialogFooter>
         </form>

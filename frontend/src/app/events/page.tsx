@@ -30,7 +30,7 @@ export default function DiscoveryPage() {
     <div className="flex min-h-screen bg-background text-text-primary">
       <DesktopSidebar />
       
-      <main className="flex-1 flex flex-col pb-20 sm:pb-0">
+      <main className="flex-1  min-w-0 flex flex-col pb-20 sm:pb-0">
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h1 className="text-2xl font-bold">Discover Events</h1>
@@ -67,7 +67,7 @@ export default function DiscoveryPage() {
 
         <div className="flex-1 p-4 sm:p-6">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
+            <div className="flex flex-col items-center justify-center min-h-100">
               <LoadingCarousel tips={TIPS} />
             </div>
           ) : error ? (

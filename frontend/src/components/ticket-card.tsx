@@ -14,7 +14,15 @@ export function TicketCard({ ticket, event }: TicketCardProps) {
     <Card className="bg-surface-elevated border-border overflow-hidden">
       <CardContent className="p-0 flex">
         <div className="w-24 bg-accent/10 flex flex-col items-center justify-center border-r border-dashed border-border p-2 gap-2">
-            <QrCode className="w-12 h-12 text-accent" />
+            {ticket.qrCodeUrl ? (
+                <img
+                    src={ticket.qrCodeUrl}
+                    alt="Ticket QR Code"
+                    className="w-16 h-16 rounded-sm"
+                />
+            ) : (
+                <QrCode className="w-12 h-12 text-accent" />
+            )}
             <span className="font-mono text-[10px] text-text-muted truncate w-full text-center">
                 {ticket.reference.split('-')[1]}
             </span>

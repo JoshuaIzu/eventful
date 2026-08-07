@@ -6,6 +6,11 @@ export class EventController {
   constructor(
     private readonly eventService: EventService
   ) {}
+  private isValidCloudinaryUrl (value: unknown): boolean {
+    if (typeof value !== 'string') return false;
+    const cloud = process.env.CLOUDINARY_CLOUD_NAME;
+    return value.startsWith(`https://res.cloudinary.com/${cloud}/`);
+  };
 
   public create = async (req: IAuthenticatedRequest, res: Response): Promise<void> => {
     try {
@@ -14,7 +19,7 @@ export class EventController {
         return;
       }
 
-      const { title, description, date, basePrice, reminderType, pricingType } = req.body;
+      const { title, description, date, basePrice, reminderType, pricingType, imageUrl } = req.body;
 
       if (!title || typeof title !== 'string' || title.trim().length === 0) {
         res.status(400).json({ error: 'BAD_REQUEST', message: 'Title is required.' });
@@ -40,6 +45,10 @@ export class EventController {
         res.status(400).json({ error: 'BAD_REQUEST', message: 'Pricing type must be STANDARD, EARLY_BIRD, or VIP.' });
         return;
       }
+      if (imageUrl !==undefined && !this.isValidCloudinaryUrl(imageUrl)) {
+        res.status(400).json({ error: 'BAD_REQUEST', message: 'Invalid image URL.' });
+        return;
+      }
 
       const event = await this.eventService.createNewEvent(req.user.sub, {
         title, description, date, basePrice, reminderType, pricingType
@@ -55,6 +64,12 @@ export class EventController {
   public update = async (req: IAuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const eventId  = req.params.eventId as string;
+
+      if (req.body.imageUrl !== undefined && !this.isValidCloudinaryUrl(req.body.imageUrl)) {
+        res.status(400).json({ error: 'BAD_REQUEST', message: 'Invalid image URL.' });
+        return;
+      }
+
       const updateEvent = await this.eventService.updateEvent(eventId, req.user!.sub, req.body)
       res.status(200).json(updateEvent);
     } catch (error: any) {
