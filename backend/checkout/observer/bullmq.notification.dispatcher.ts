@@ -12,7 +12,8 @@ export class BullMQNotificationDispatcher implements INotificationDispatcher {
         eventeeId: string,
         eventId: string,
         reference: string,
-        eventName: string
+        eventName: string,
+        qrCodeUrl: string | null,
     ): Promise<void> => {
         const user = await this.userRepo.findById(eventeeId);
         if (!user) {
@@ -25,6 +26,7 @@ export class BullMQNotificationDispatcher implements INotificationDispatcher {
             eventId,
             reference,
             eventName,
+            qrCodeUrl,
         };
 
         let lastError: unknown;

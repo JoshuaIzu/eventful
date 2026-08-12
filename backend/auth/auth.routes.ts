@@ -7,5 +7,8 @@ export function createAuthRoutes(controller: AuthController, strictLimiter: Requ
     router.post('/login', strictLimiter, controller.login);
     router.get('/me', strictLimiter, auth, controller.getMe);
     router.delete('/logout', strictLimiter, auth, controller.logout);
+
+    router.post('/reset-password', strictLimiter, controller.requestPasswordReset);
+    router.post('/confirm-reset', strictLimiter, controller.resetPassword)
     return router;
 }

@@ -16,6 +16,10 @@ model User {
   events       Event[]  @relation("CreatorEvents")
   tickets      Ticket[] @relation("EventeeTickets")
 
+  // Fields for password reset
+  resetToken          String?
+  resetTokenExpiresAt DateTime?
+
   @@schema("eventful")
 }
 

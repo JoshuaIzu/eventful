@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
-import { IUserRepository } from './user-repository.interface';
+import { IUserRepository, IResetPasswordRepository } from './user-repository.interface';
 import { IUser, ICreateUserParams, UserRole } from "../types";
 
-export class UserRepository implements IUserRepository {
+export class UserRepository implements IUserRepository, IResetPasswordRepository {
     constructor(private readonly db: PrismaClient) {}
 
     public async findByEmail(email: string): Promise<IUser | null> {
@@ -28,6 +28,38 @@ export class UserRepository implements IUserRepository {
         return this.mapToUser(user)
     }
 
+   public async findByResetToken(token: string): Promise<IUser | null> {
+        const record = await this.db.user.findFirst({
+          where: {
+            resetToken: token,
+            resetTokenExpiresAt: { gt: new Date() }
+          }
+        })
+        if (!record) return null;
+        return this.mapToUser(record);
+    }
+
+
+   public async updateResetToken(userId: string, token: string, expiresAt: Date): Promise<void> {
+        await this.db.user.update({
+            where: { id: userId },
+            data: { resetToken: token, resetTokenExpiresAt: expiresAt }
+        });
+    }
+
+   public async updatePassword(userId: string, newPasswordHash: string): Promise<void> {
+        await this.db.user.update({
+            where: { id: userId },
+            data: { passwordHash: newPasswordHash }
+        });
+    }
+   public async clearResetToken(userId: string): Promise<void> {
+        await this.db.user.update({
+           where: { id: userId },
+           data: { resetToken: null, resetTokenExpiresAt: null}
+       })
+   }
+
     private mapToUser(record: {
         id: string;
         email: string;
@@ -43,5 +75,4 @@ export class UserRepository implements IUserRepository {
             createdAt: record.createdAt,
         };
     }
-
 }

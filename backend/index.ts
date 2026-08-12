@@ -35,7 +35,7 @@ import { TicketQrObserver } from './checkout/observer/ticket.qr.observer';
 import { NotificationObserver } from './checkout/observer/notification.observer';
 import { BullMQNotificationDispatcher } from './checkout/observer/bullmq.notification.dispatcher';
 import { createCheckoutRoutes } from './checkout/checkout.routes';
-import {createSendReceiptProcessor} from "./queue/processors/send.receipt.processor";
+import {createSendReceiptProcessor, SEND_RECEIPT_JOB_NAME} from "./queue/processors/send.receipt.processor";
 import { JOB_NAMES } from './queue/job.names';
 import { ResendEmailService } from './queue/services/email.service';
 import { NOTIFICATION_QUEUE_NAME, createNotificationQueue } from './queue/notification-queue';
@@ -54,6 +54,7 @@ import path from 'path';
 import next from 'next';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
+import { ResetPasswordService } from "./auth/reset-password.service";
 
 const app = express();
 
@@ -82,7 +83,7 @@ const worker = new Worker(
     NOTIFICATION_QUEUE_NAME,
     async (job) => {
         switch (job.name) {
-            case JOB_NAMES.SEND_RECEIPT:
+            case SEND_RECEIPT_JOB_NAME:
                 return handleSendReceipt(job);
             default:
                 throw new Error(`Unknown job name: ${job.name}`);
@@ -138,15 +139,16 @@ const authenticateToken = createAuthMiddleWare(authService);
 const eventService = new EventService(eventRepo, ticketRepo, redis, pricingStrategies);
 const analyticsService = new AnalyticsService(ticketRepo, redis);
 const checkoutService    = new CheckoutService(eventRepo, ticketRepo, paymentProvider, eventSubject);
+const uploadService = new UploadService()
+const resetPasswordService = new ResetPasswordService(userRepo, emailService);
 
 //Depends
-const authController = new AuthController(authService);
+const authController = new AuthController(authService, resetPasswordService);
 const eventController = new EventController(eventService);
 const analyticController = new AnalyticsController(analyticsService);
 const checkoutController = new CheckoutController(checkoutService);
 const webhookController  = new WebhookController(paymentProvider, ticketRepo, eventSubject);
 const scanController = new ScanController(ticketRepo);
-const uploadService = new UploadService()
 const uploadController = new UploadController(uploadService);
 
 // Observers

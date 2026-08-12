@@ -142,3 +142,14 @@ export interface IRateLimiterConfig {
     maxRequests: number;
 }
 
+export interface IResetPasswordDTO {
+    email: string;
+}
+
+export interface IConfirmResetDTO {
+  token: string;
+  newPassword: string;
+}
+
+
+

@@ -18,12 +18,19 @@ export interface IEventReminder {
   eventDate: string;
   reminderType: ReminderType;
 }
+export interface IPasswordResetEmail {
+  to: string;
+  resetToken: string;
+}
 
 
 export interface IEmailService {
   sendTicketReceipt(receipt: ITicketReceipt): Promise<void>;
   sendEventReminder(reminder: IEventReminder): Promise<void>;
+  sendPasswordReset(reset: IPasswordResetEmail): Promise<void>;
 }
+
+
 
 
 const WHEN_LABEL: Record<ReminderType, string> = {
@@ -95,5 +102,23 @@ export class ResendEmailService implements IEmailService {
     },
         { idempotencyKey: `reminder:${ticketId}:${reminderType}` },
         );
+  }
+
+  async  sendPasswordReset(reset: IPasswordResetEmail): Promise<void> {
+    const baseUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+const resetUrl = `${baseUrl}/reset-password/confirm?token=${encodeURIComponent(reset.resetToken)}`;
+
+    await this.resend.emails.send({
+      from: this.fromEmail,
+      to: reset.to,
+      subject: 'Reset your password',
+      html: `
+        <h1>Reset your password</h1>
+        <p>Click the link below to set a new password</p>
+        <p><a href="${esc(resetUrl)}">Reset password</a></p>
+        <p>This link expires in 10 minutes.</p>
+      `,
+    });
+
   }
 }

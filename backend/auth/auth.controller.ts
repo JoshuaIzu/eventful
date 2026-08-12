@@ -2,11 +2,12 @@ import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { ISignupDTO, ILoginDTO, UserRole } from "../types";
 import {IAuthenticatedRequest} from "../middleware/auth.middleware";
+import { ResetPasswordService } from './reset-password.service'
 
 const VALID_ROLES: ReadonlySet<string> = new Set(['CREATOR', 'EVENTEE']);
 
 export class AuthController {
-    constructor(private authService: AuthService) {}
+    constructor(private authService: AuthService, private resetPasswordService: ResetPasswordService) {}
 
     public signup = async (req: Request, res: Response): Promise<void> => {
         try {
@@ -137,5 +138,61 @@ export class AuthController {
             const message = error instanceof Error ? error.message : 'An unexpected error occurred';
             res.status(500).json({ error: 'SERVER_ERROR', message });
         }
+    }
+
+    public requestPasswordReset = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { email } = req.body;
+            if (!email ) {
+                res.status(400).json({
+                    error: 'bad_request',
+                    message: 'Email is required',
+                });
+                return;
+            }
+
+            await this.resetPasswordService.requestPasswordReset(email);
+            res.status(200).json({ message: 'If email exists, a reset link has been sent' });
+        } catch (error: unknown) {
+            res.status(500).json({
+                error: 'Internal_Server_Error',
+                message: 'An unexpected error occurred.',
+            });
+        }
     };
+
+    public resetPassword = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { token, newPassword } = req.body;
+            if (!token || !newPassword) {
+                res.status(400).json({
+                    error: 'BAD_REQUEST',
+                    message: 'Token and new password are required',
+                });
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                res.status(400).json({
+                    error: 'BAD_REQUEST',
+                    message: 'Password must be at least 8 characters'
+                });
+                return;
+            }
+            await this.resetPasswordService.resetPassword(token, newPassword);
+            res.status(200).json({ message: 'Password has been reset successfully' })
+        } catch (error: unknown) {
+            if (error instanceof Error && error.message === 'Invalid or expired reset token') {
+                res.status(400).json({
+                    error: 'bad_request',
+                    message: 'Invalid or expired reset token',
+                });
+                return;
+            }
+            res.status(500).json({
+                error: 'Internal_Server_Error',
+                message: 'An unexpected error occurred.',
+            });
+        }
+    }
 }
