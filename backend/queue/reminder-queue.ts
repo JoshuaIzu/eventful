@@ -35,7 +35,7 @@ export class ReminderQueue {
 
   public async scheduleReminder(payload: IReminderJobPayload, delayMs: number): Promise<void> {
     await this.queue.add(JOB_NAMES.SEND_REMINDER, payload, {
-      jobId: `reminder:${payload.ticketId}:${payload.reminderType}`,
+      jobId: `reminder-${payload.ticketId}-${payload.reminderType}`,
       delay: Math.max(0, delayMs),
     });
   }

@@ -33,7 +33,7 @@ export class BullMQNotificationDispatcher implements INotificationDispatcher {
         for (let attempt = 1; attempt <= 3; attempt++) {
            try {
                await this.notificationQueue.add(JOB_NAMES.SEND_RECEIPT, payload,
-                {   jobId: `receipt:${ticketId}`,
+                {   jobId: `receipt-${ticketId}`,
                     attempts: 3,
                     backoff: {type: 'exponential', delay: 1000},
                 });

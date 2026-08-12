@@ -75,7 +75,7 @@ export class ResendEmailService implements IEmailService {
         ? [{ filename: 'ticket-qr.png', content: qrBase64, contentType: 'image/png', contentId: 'ticket-qr' }]
         : [],
     },
-        { idempotencyKey: `receipt:${ticketId}` });
+        { idempotencyKey: `receipt-${ticketId}` });
   }
 
 
@@ -100,7 +100,7 @@ export class ResendEmailService implements IEmailService {
         <p>See you there!</p>
         `,
     },
-        { idempotencyKey: `reminder:${ticketId}:${reminderType}` },
+        { idempotencyKey: `reminder-${ticketId}-${reminderType}` },
         );
   }
 
@@ -118,7 +118,8 @@ const resetUrl = `${baseUrl}/reset-password/confirm?token=${encodeURIComponent(r
         <p><a href="${esc(resetUrl)}">Reset password</a></p>
         <p>This link expires in 10 minutes.</p>
       `,
-    });
+    },
+        { idempotencyKey: `password-reset-${reset.to}` });
 
   }
 }

@@ -29,7 +29,7 @@ export class PasswordResetQueue {
 
   public async addPasswordResetJob(payload: IPasswordResetJobPayload): Promise<void> {
     await this.queue.add(JOB_NAMES.SEND_PASSWORD_RESET, payload, {
-      jobId: `password-reset:${payload.to}`,
+      jobId: `password-reset-${payload.to}`,
     });
   }
 
