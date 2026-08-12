@@ -89,8 +89,9 @@ export default function ResetPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    autoComplete="email"
                     disabled={isLoading}
-                    className="min-h-[44px]"
+                    className="min-h-[44px] text-text-primary"
                   />
                 </div>
                 <Button

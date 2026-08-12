@@ -14,7 +14,7 @@ import { motion } from "framer-motion"
 export default function PaymentCallbackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen w-full bg-background grid place-items-center p-4">
+      <div className="min-h-screen w-full bg-background grid place-items-center p-4 sm:p-8">
         <LoadingCarousel tips={["Loading..."]} />
       </div>
     }>
@@ -34,9 +34,10 @@ function PaymentCallbackContent() {
     return (
       <div className="min-h-screen w-full bg-background grid place-items-center p-4 sm:p-8">
         <motion.div
-          className="w-full max-w-md mx-auto"
+          className="w-full max-w-md mx-auto flex flex-col items-center"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
           >
         <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-2xl space-y-6 w-full min-w-[300px] text-center">
           <XCircle className="w-16 h-16 text-error mx-auto" />
@@ -44,7 +45,7 @@ function PaymentCallbackContent() {
             <h1 className="text-2xl font-bold text-text-primary">Invalid Payment</h1>
             <p className="text-text-secondary">No payment reference was found.</p>
           </div>
-          <Button onClick={() => router.push("/events")} className="w-full">
+          <Button onClick={() => router.push("/events")} className="w-full min-h-[44px]">
             Browse Events
           </Button>
         </div>
@@ -55,7 +56,7 @@ function PaymentCallbackContent() {
 
   if (isLoading || data?.status === "PENDING") {
     return (
-      <div className="min-h-screen w-full bg-background grid place-items-center p-4">
+      <div className="min-h-screen w-full bg-background grid place-items-center p-4 sm:p-8">
         <LoadingCarousel
           tips={[
             "Verifying your payment...",
@@ -71,7 +72,7 @@ function PaymentCallbackContent() {
     return (
       <div className="min-h-screen w-full bg-background grid place-items-center p-4 sm:p-8">
         <motion.div
-          className="w-full max-w-md mx-auto"
+          className="w-full max-w-md mx-auto flex flex-col items-center"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
@@ -90,7 +91,7 @@ function PaymentCallbackContent() {
               <Button variant="outline" onClick={() => router.push("/tickets")} className="flex-1 min-h-[44px]">
                 My Tickets
               </Button>
-              <Button onClick={() => router.push("/events")} className="flex-1">
+              <Button onClick={() => router.push("/events")} className="flex-1 min-h-[44px]">
                 Browse Events
               </Button>
             </div>
@@ -106,7 +107,7 @@ function PaymentCallbackContent() {
     return (
       <div className="min-h-screen w-full bg-background grid place-items-center p-4 sm:p-8">
         <motion.div
-          className="w-full max-w-md mx-auto"
+          className="w-full max-w-md mx-auto flex flex-col items-center"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -169,7 +170,7 @@ function PaymentCallbackContent() {
   return (
     <div className="min-h-screen w-full bg-background grid place-items-center p-4 sm:p-8">
       <motion.div
-        className="w-full max-w-md mx-auto"
+        className="w-full max-w-md mx-auto flex flex-col items-center"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
