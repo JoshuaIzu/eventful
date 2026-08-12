@@ -1,12 +1,12 @@
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { IResetPasswordRepository } from './user-repository.interface';
-import { IEmailService } from "../queue/services/email.service";
+import { PasswordResetQueue } from '../queue/password-reset-queue';
 
 export class ResetPasswordService {
     private readonly workerFactor = 12;
 
-    constructor(private readonly userRepo: IResetPasswordRepository, private readonly emailService: IEmailService) {}
+    constructor(private readonly userRepo: IResetPasswordRepository, private readonly passwordResetQueue: PasswordResetQueue) {}
 
     public async requestPasswordReset(email: string): Promise<void>{
         const user = await this.userRepo.findByEmail(email);
@@ -18,10 +18,10 @@ export class ResetPasswordService {
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         try {
-            await this.emailService.sendPasswordReset({ to: user.email, resetToken });
+            await this.passwordResetQueue.addPasswordResetJob({ to: user.email, resetToken });
             await this.userRepo.updateResetToken(user.id, resetToken, expiresAt);
         } catch (err) {
-            console.error('[reset-password]Failed to send password reset email:', err);
+            console.error('[reset-password]Failed to queue password reset email:', err);
         }
     }
 

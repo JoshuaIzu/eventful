@@ -42,6 +42,8 @@ import { NOTIFICATION_QUEUE_NAME, createNotificationQueue } from './queue/notifi
 import { createSendReminderProcessor } from "./queue/processors/send.reminder.processor";
 import { ReminderQueue, REMINDER_QUEUE_NAME } from './queue/reminder-queue';
 import { QueueObserver } from './queue/queue.observer';
+import { PasswordResetQueue, PASSWORD_RESET_QUEUE_NAME } from './queue/password-reset-queue';
+import { createSendPasswordResetProcessor } from './queue/processors/send.password-reset.processor';
 import { ReminderObserver } from './checkout/observer/reminder.observer';
 import { OneDayReminderStrategy } from './events/strategies/oneday.reminder.strategy';
 import { OneWeekReminderStrategy } from './events/strategies/oneweek.reminder.strategy';
@@ -116,6 +118,26 @@ reminderWorker.on('completed', (job) => console.log(`[reminder-worker] ${job?.na
 reminderWorker.on('failed',    (job, err) => console.error(`[reminder-worker] ${job?.name ?? 'unknown'}#${job?.id ?? '?'} failed:`, err));
 console.log(`[reminder-worker] listening on "${REMINDER_QUEUE_NAME}" (concurrency=${Number(process.env.WORKER_CONCURRENCY) || 5})`);
 
+const passwordResetQueue = new PasswordResetQueue();
+const handleSendPasswordReset = createSendPasswordResetProcessor(emailService);
+
+const passwordResetWorker = new Worker(
+    PASSWORD_RESET_QUEUE_NAME,
+    async (job) => {
+        switch (job.name) {
+            case JOB_NAMES.SEND_PASSWORD_RESET:
+                return handleSendPasswordReset(job);
+            default:
+                throw new Error(`Unknown job name: ${job.name}`);
+        }
+    },
+    { connection: redisConfig, concurrency: Number(process.env.WORKER_CONCURRENCY) || 5 }
+);
+
+passwordResetWorker.on('completed', (job) => console.log(`[password-reset-worker] ${job?.name ?? 'unknown'}#${job?.id ?? '?'} completed`));
+passwordResetWorker.on('failed',    (job, err) => console.error(`[password-reset-worker] ${job?.name ?? 'unknown'}#${job?.id ?? '?'} failed:`, err));
+console.log(`[password-reset-worker] listening on "${PASSWORD_RESET_QUEUE_NAME}" (concurrency=${Number(process.env.WORKER_CONCURRENCY) || 5})`);
+
 
 app.use(express.json());
 const apiRateLimiter = new AtomicRedisRateLimiter(redis);
@@ -140,7 +162,7 @@ const eventService = new EventService(eventRepo, ticketRepo, redis, pricingStrat
 const analyticsService = new AnalyticsService(ticketRepo, redis);
 const checkoutService    = new CheckoutService(eventRepo, ticketRepo, paymentProvider, eventSubject);
 const uploadService = new UploadService()
-const resetPasswordService = new ResetPasswordService(userRepo, emailService);
+const resetPasswordService = new ResetPasswordService(userRepo, passwordResetQueue);
 
 //Depends
 const authController = new AuthController(authService, resetPasswordService);
@@ -164,6 +186,7 @@ const queueObserver = new QueueObserver(
   new Map([
     [NOTIFICATION_QUEUE_NAME, notificationQueue],
     [REMINDER_QUEUE_NAME, reminderQueue.getQueue()],
+    [PASSWORD_RESET_QUEUE_NAME, passwordResetQueue.getQueue()],
   ]),
   {
     intervalMs: Number(process.env.QUEUE_OBSERVER_INTERVAL_MS) || 30000,
