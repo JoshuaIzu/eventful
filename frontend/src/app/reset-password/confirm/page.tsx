@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 
 
@@ -48,63 +50,147 @@ function ConfirmResetForm() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Invalid Reset Link</h1>
-          <p className="text-text-muted">This reset link is invalid or has expired.</p>
+      <div className="min-h-screen bg-background flex items-center justify-center p-6 sm:p-8">
+        <div className="w-full max-w-md">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="w-full flex flex-col items-center"
+          >
+            <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-2xl space-y-8 w-full min-w-[300px]">
+              {/* Header */}
+              <div className="space-y-1 text-center">
+                <div className="text-3xl font-bold bg-gradient-to-r from-accent to-accent-glow bg-clip-text text-transparent">
+                  EVENTFUL
+                </div>
+                <h1 className="text-xl font-semibold text-text-primary">
+                  Invalid Reset Link
+                </h1>
+                <p className="text-sm text-text-muted">
+                  This reset link is invalid or has expired.
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6 sm:p-8">
       <div className="w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-2">Set New Password</h1>
-        <p className="text-text-muted mb-6">Enter your new password below</p>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full flex flex-col items-center"
+        >
+          <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-2xl space-y-8 w-full min-w-[300px]">
+            {/* Header */}
+            <div className="space-y-1 text-center">
+              <div className="text-3xl font-bold bg-gradient-to-r from-accent to-accent-glow bg-clip-text text-transparent">
+                EVENTFUL
+              </div>
+              <h1 className="text-xl font-semibold text-text-primary">
+                Set New Password
+              </h1>
+              <p className="text-sm text-text-muted">
+                Enter your new password below
+              </p>
+            </div>
 
-        {error && (
-          <div className="p-4 rounded-lg bg-error/10 border border-error text-error mb-6">
-            {error}
-          </div>
-        )}
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm text-error bg-error/10 border border-error/20 rounded-lg px-4 py-2.5"
+                >
+                  {error}
+                </motion.p>
+              )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="newPassword">New Password</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              disabled={isLoading}
-            />
+              <div className="space-y-1.5">
+                <Label htmlFor="newPassword" className="text-text-secondary text-sm">
+                  New Password
+                </Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="min-h-[44px]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="confirmPassword" className="text-text-secondary text-sm">
+                  Confirm Password
+                </Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="min-h-[44px]"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full min-h-[44px]"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Resetting…
+                  </>
+                ) : (
+                  "Reset Password"
+                )}
+              </Button>
+            </form>
           </div>
-          <div>
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? "Resetting..." : "Reset Password"}
-          </Button>
-        </form>
+        </motion.div>
       </div>
     </div>
   );
 }
 const ConfirmResetFallback = () => (
-  <div className="min-h-screen bg-background flex items-center justify-center p-6">
-    <div className="text-center">
-      <h1 className="text-2xl font-bold mb-2">Confirming Reset</h1>
-      <p className="text-text-muted">Please wait while we confirm your reset request.</p>
+  <div className="min-h-screen bg-background flex items-center justify-center p-6 sm:p-8">
+    <div className="w-full max-w-md">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="w-full flex flex-col items-center"
+      >
+        <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-2xl space-y-8 w-full min-w-[300px]">
+          {/* Header */}
+          <div className="space-y-1 text-center">
+            <div className="text-3xl font-bold bg-gradient-to-r from-accent to-accent-glow bg-clip-text text-transparent">
+              EVENTFUL
+            </div>
+            <h1 className="text-xl font-semibold text-text-primary">
+              Confirming Reset
+            </h1>
+            <p className="text-sm text-text-muted">
+              Please wait while we confirm your reset request.
+            </p>
+          </div>
+        </div>
+      </motion.div>
     </div>
   </div>
 )

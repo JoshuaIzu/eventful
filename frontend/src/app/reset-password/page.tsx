@@ -4,9 +4,10 @@ import * as React from "react"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 import {useAuth} from "@/hooks/use-auth";
 
@@ -39,40 +40,78 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6 sm:p-8">
       <div className="w-full max-w-md">
-        <Link href="/login" className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary">
-          <ArrowLeft className="w-4 h-4" />
-          Back to login
-        </Link>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full flex flex-col items-center"
+        >
+          <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-2xl space-y-8 w-full min-w-[300px]">
+            {/* Back link */}
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to login
+            </Link>
 
-        <div className="mt-6">
-          <h1 className="text-2xl font-bold mb-2">Reset Password</h1>
-          <p className="text-text-muted mb-6">Enter your email to receive a password reset link</p>
-
-          {message ? (
-            <div className="p-4 rounded-lg bg-success/10 border border-success text-success mb-6">
-              {message}
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
+            {/* Header */}
+            <div className="space-y-1 text-center">
+              <div className="text-3xl font-bold bg-gradient-to-r from-accent to-accent-glow bg-clip-text text-transparent">
+                EVENTFUL
               </div>
-              <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading ? "Sending..." : "Send Reset Link"}
-              </Button>
-            </form>
-          )}
-        </div>
+              <h1 className="text-xl font-semibold text-text-primary">
+                Reset your password
+              </h1>
+              <p className="text-sm text-text-muted">
+                Enter your email to receive a password reset link
+              </p>
+            </div>
+
+            {/* Form */}
+            {message ? (
+              <div className="p-4 rounded-lg bg-success/10 border border-success text-success">
+                {message}
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-text-secondary text-sm">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="min-h-[44px]"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full min-h-[44px]"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Sending…
+                    </>
+                  ) : (
+                    "Send Reset Link"
+                  )}
+                </Button>
+              </form>
+            )}
+          </div>
+        </motion.div>
       </div>
     </div>
   );
